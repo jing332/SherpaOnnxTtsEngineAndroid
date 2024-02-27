@@ -5,4 +5,8 @@
     <string name="sample_text1">这是语音合成示例。</string>
     <string name="import_models">Import models</string>
     <string name="list_is_empty">List is empty.</string>
+    <string name="edit">Edit</string>
+    <string name="language">Language</string>
+    <string name="display_name">Display name</string>
+    <string name="onnx_model_file">Onnx model file</string>
 </resources>

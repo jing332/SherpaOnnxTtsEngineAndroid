@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.text.selection.LocalTextSelectionColors
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
@@ -15,6 +16,7 @@ import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.TextFieldColors
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.State
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -22,6 +24,7 @@ import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.takeOrElse
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.TextStyle
@@ -79,67 +82,67 @@ fun DenseOutlinedField(
     }
     val mergedTextStyle = textStyle.merge(TextStyle(color = textColor))
 
-//    CompositionLocalProvider(LocalTextSelectionColors provides colors.selectionColors) {
-    BasicTextField(
-        value = value,
-        modifier = if (label != null) {
-            modifier
-                // Merge semantics at the beginning of the modifier chain to ensure padding is
-                // considered part of the text field.
-                .semantics(mergeDescendants = true) {}
-                .padding(top = 8.dp)
-        } else {
-            modifier
-        },
+    CompositionLocalProvider(LocalTextSelectionColors provides colors.textSelectionColors) {
+        BasicTextField(
+            value = value,
+            modifier = if (label != null) {
+                modifier
+                    // Merge semantics at the beginning of the modifier chain to ensure padding is
+                    // considered part of the text field.
+                    .semantics(mergeDescendants = true) {}
+                    .padding(top = 8.dp)
+            } else {
+                modifier
+            },
 //            .defaultMinSize(
 //                minWidth = OutlinedTextFieldDefaults.MinWidth,
 //                minHeight = OutlinedTextFieldDefaults.MinHeight
 //            ),
-        onValueChange = onValueChange,
-        enabled = enabled,
-        readOnly = readOnly,
-        textStyle = mergedTextStyle,
-//        cursorBrush = SolidColor(colors.cursorColor(isError).value),
-        visualTransformation = visualTransformation,
-        keyboardOptions = keyboardOptions,
-        keyboardActions = keyboardActions,
-        interactionSource = interactionSource,
-        singleLine = singleLine,
-        maxLines = maxLines,
-        minLines = minLines,
-        decorationBox = @Composable { innerTextField ->
-            OutlinedTextFieldDefaults.DecorationBox(
-                value = value,
-                visualTransformation = visualTransformation,
-                innerTextField = innerTextField,
-                placeholder = placeholder,
-                label = label,
-                leadingIcon = leadingIcon,
-                trailingIcon = trailingIcon,
-                prefix = prefix,
-                suffix = suffix,
-                supportingText = supportingText,
-                singleLine = singleLine,
-                enabled = enabled,
-                isError = isError,
-                interactionSource = interactionSource,
-                colors = colors,
-                container = {
-                    OutlinedTextFieldDefaults.ContainerBox(
-                        enabled,
-                        isError,
-                        interactionSource,
-                        colors,
-                        shape
+            onValueChange = onValueChange,
+            enabled = enabled,
+            readOnly = readOnly,
+            textStyle = mergedTextStyle,
+            cursorBrush = SolidColor(if (isError) colors.errorCursorColor else colors.cursorColor),
+            visualTransformation = visualTransformation,
+            keyboardOptions = keyboardOptions,
+            keyboardActions = keyboardActions,
+            interactionSource = interactionSource,
+            singleLine = singleLine,
+            maxLines = maxLines,
+            minLines = minLines,
+            decorationBox = @Composable { innerTextField ->
+                OutlinedTextFieldDefaults.DecorationBox(
+                    value = value,
+                    visualTransformation = visualTransformation,
+                    innerTextField = innerTextField,
+                    placeholder = placeholder,
+                    label = label,
+                    leadingIcon = leadingIcon,
+                    trailingIcon = trailingIcon,
+                    prefix = prefix,
+                    suffix = suffix,
+                    supportingText = supportingText,
+                    singleLine = singleLine,
+                    enabled = enabled,
+                    isError = isError,
+                    interactionSource = interactionSource,
+                    colors = colors,
+                    container = {
+                        OutlinedTextFieldDefaults.ContainerBox(
+                            enabled,
+                            isError,
+                            interactionSource,
+                            colors,
+                            shape
+                        )
+                    },
+                    contentPadding = OutlinedTextFieldDefaults.contentPadding(
+                        start = 12.dp, top = 10.dp, end = 12.dp, bottom = 10.dp,
                     )
-                },
-                contentPadding = OutlinedTextFieldDefaults.contentPadding(
-                    start = 12.dp, top = 10.dp, end = 12.dp, bottom = 10.dp,
                 )
-            )
-        }
-    )
-//    }
+            }
+        )
+    }
 }
 
 

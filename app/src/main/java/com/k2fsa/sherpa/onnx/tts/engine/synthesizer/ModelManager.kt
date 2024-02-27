@@ -9,6 +9,13 @@ import com.k2fsa.sherpa.onnx.tts.engine.synthesizer.config.ConfigManager
 import com.k2fsa.sherpa.onnx.tts.engine.synthesizer.config.Model
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharedFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asSharedFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.runBlocking
 import java.io.File
 
 object ModelManager {
@@ -18,12 +25,12 @@ object ModelManager {
 
     fun models() = models
 
-    private val _modelsFlow = MutableSharedFlow<List<Model>>(replay = 1)
-    val modelsFlow: Flow<List<Model>>
-        get() = _modelsFlow
+    private val _modelsFlow by lazy { MutableStateFlow<List<Model>>(emptyList()) }
+    val modelsFlow: StateFlow<List<Model>>
+        get() = _modelsFlow.asStateFlow()
 
     private fun notifyModelsChange() {
-        _modelsFlow.tryEmit(models)
+        _modelsFlow.value = models.toList()
     }
 
     fun load() {
@@ -45,7 +52,7 @@ object ModelManager {
 
     fun updateModel(model: Model) {
         models.indexOfFirst { it.id == model.id }.takeIf { it != -1 }?.let {
-            models[it] = model
+            models[it] = model.copy()
             ConfigManager.updateConfig(ConfigManager.config.copy(models = models))
             notifyModelsChange()
         }
