@@ -1,0 +1,10 @@
+model:
+  - id: vits-piper-zh_CN-huayan-medium
+    lang: zh
+#    onnx: vits-piper-zh_CN-huayan-medium.onnx
+    dataDir: ./espeak-ng-data
+
+  - id: vits-zh-hf-keqing
+    lang: zh
+    ruleFsts: ./rule.fst
+    lexicon: ./lexicon.txt

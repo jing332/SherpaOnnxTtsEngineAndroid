@@ -1,0 +1,8 @@
+<resources>
+    <string name="app_name">Next-gen Kaldi: TTS</string>
+    <string name="audition">Audition</string>
+    <string name="sample_text">Sample text</string>
+    <string name="sample_text1">这是语音合成示例。</string>
+    <string name="import_models">Import models</string>
+    <string name="list_is_empty">List is empty.</string>
+</resources>
