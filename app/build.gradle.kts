@@ -46,9 +46,19 @@ android {
         }
     }
 
+    signingConfigs {
+        create("release") {
+            storeFile = file("sherpa-onnx.jks")
+            storePassword = "sherpa-onnx"
+            keyAlias = "sherpa-onnx"
+            keyPassword = "sherpa-onnx"
+        }
+    }
+
     buildTypes {
         release {
-            isMinifyEnabled = false
+            signingConfig = signingConfigs["release"]
+            isMinifyEnabled = true
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
