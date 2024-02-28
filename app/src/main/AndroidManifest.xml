@@ -4,8 +4,8 @@
     package="com.k2fsa.sherpa.onnx.tts.engine">
 
     <application
-        android:allowBackup="true"
         android:name=".App"
+        android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:fullBackupContent="@xml/backup_rules"
         android:icon="@mipmap/ic_launcher"
@@ -14,6 +14,11 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.SherpaOnnxTtsEngine"
         tools:targetApi="31">
+        <activity
+            android:name=".ui.sampletext.SampleTextManagerActivity"
+            android:exported="true"
+            android:label="@string/sample_text" />
+
         <activity
             android:name=".service.GetSampleText"
             android:exported="true"

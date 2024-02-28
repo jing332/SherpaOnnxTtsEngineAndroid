@@ -1,6 +1,5 @@
 package com.k2fsa.sherpa.onnx.tts.engine.ui.models
 
-import android.text.Selection
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -69,6 +68,7 @@ fun ImportModelsDialog(onDismissRequest: () -> Unit) {
     }, confirmButton = {
         TextButton(onClick = {
             ModelManager.addModel(*checkedModels.toTypedArray())
+            onDismissRequest()
         }) {
             Text(text = stringResource(id = android.R.string.ok))
         }

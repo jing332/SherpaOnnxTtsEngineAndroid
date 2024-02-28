@@ -18,6 +18,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.k2fsa.sherpa.onnx.tts.engine.R
 import com.k2fsa.sherpa.onnx.tts.engine.synthesizer.config.Model
+import com.k2fsa.sherpa.onnx.tts.engine.ui.LanguageSelectionDialog
 import com.k2fsa.sherpa.onnx.tts.engine.ui.widgets.DenseOutlinedField
 
 @Composable
@@ -62,7 +63,7 @@ fun ModelEditScreen(
 
         var showLangSelectDialog by remember { mutableStateOf(false) }
         if (showLangSelectDialog)
-            ModelLanguageSelectionDialog(
+            LanguageSelectionDialog(
                 onDismissRequest = { showLangSelectDialog = false },
                 language = model.lang
             ) {

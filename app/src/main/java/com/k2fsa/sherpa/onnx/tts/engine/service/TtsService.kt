@@ -14,12 +14,9 @@ import com.k2fsa.sherpa.onnx.tts.engine.synthesizer.ModelManager.toOfflineTtsCon
 import com.k2fsa.sherpa.onnx.tts.engine.synthesizer.SynthesizerManager
 import com.k2fsa.sherpa.onnx.tts.engine.synthesizer.config.Model
 import com.k2fsa.sherpa.onnx.tts.engine.ui.TAG
-import com.k2fsa.sherpa.onnx.tts.engine.ui.models.ModelManagerScreen
-import com.k2fsa.sherpa.onnx.tts.engine.utils.equalsIso3
 import com.k2fsa.sherpa.onnx.tts.engine.utils.longToast
 import com.k2fsa.sherpa.onnx.tts.engine.utils.newLocaleFromCode
 import com.k2fsa.sherpa.onnx.tts.engine.utils.toByteArray
-import com.k2fsa.sherpa.onnx.tts.engine.utils.toLocale
 import java.util.Locale
 import kotlin.math.min
 
@@ -70,6 +67,10 @@ Failed to get default language from engine com.k2fsa.sherpa.chapter5
 */
 
 class TtsService : TextToSpeechService() {
+    companion object {
+        const val NOT_SET_VOICE_NAME = "NOT_SET_VOICE"
+    }
+
     private var languages: List<Locale> = emptyList()
     override fun onCreate() {
         Log.i(TAG, "onCreate tts service")
@@ -121,6 +122,22 @@ class TtsService : TextToSpeechService() {
 
     override fun onGetVoices(): MutableList<Voice> {
         val list = mutableListOf<Voice>()
+        list.add(
+            Voice(
+                NOT_SET_VOICE_NAME, Locale("zh", "CN"), Voice.QUALITY_NORMAL,
+                /* latency = */ Voice.LATENCY_NORMAL,
+                /* requiresNetworkConnection = */ false,
+                /* features = */ setOf()
+            )
+        )
+        list.add(
+            Voice(
+                NOT_SET_VOICE_NAME, Locale("en", "US"), Voice.QUALITY_NORMAL,
+                /* latency = */ Voice.LATENCY_NORMAL,
+                /* requiresNetworkConnection = */ false,
+                /* features = */ setOf()
+            )
+        )
         ModelManager.models().forEach {
             list.add(
                 Voice(
@@ -153,18 +170,16 @@ class TtsService : TextToSpeechService() {
         variant: String?
     ): String {
         Log.i(TAG, "onGetDefaultVoiceNameFor: $lang, $country, $variant")
-        val m =
-            ModelManager.models().find { it.lang.toLocale().equalsIso3(lang ?: "", country ?: "") }
-        return if (m == null) {
-            ""
-        } else m.id
+        return NOT_SET_VOICE_NAME
     }
 
     override fun onStop() {}
 
     private fun getTtsConfig(voiceName: String?): Model? {
+        Log.d(TAG, "getTtsConfig: $voiceName")
         return ModelManager.models()
-            .run { if (voiceName == null) null else this }?.find { it.id == voiceName }
+            .run { if (voiceName == null || voiceName == NOT_SET_VOICE_NAME) null else this }
+            ?.find { it.id == voiceName }
             ?: ModelManager.models().find { it.id == TtsConfig.modelId.value }
             ?: ModelManager.models().getOrNull(0)
     }

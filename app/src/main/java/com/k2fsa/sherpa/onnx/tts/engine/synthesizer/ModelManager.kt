@@ -99,7 +99,7 @@ object ModelManager {
                         ruleFsts = if (dataDir == null) "${dir.name}/rule.fst" else "",
                         tokens = "${dir.name}/tokens.txt",
                         dataDir = dataDir?.run { "${dir.name}/espeak-ng-data" } ?: "",
-                        lang = "eng"
+                        lang = "en"
                     )
                 )
 
@@ -129,39 +129,4 @@ object ModelManager {
             ruleFsts = format(ruleFsts),
         )
     }
-
-    /* fun readModelsFromDir(context: Context): List<OfflineTtsConfig> {
-         val list = mutableListOf<OfflineTtsConfig>()
-         context.getExternalFilesDir("model")?.listFiles()?.forEach { file ->
-             if (file.isDirectory) {
-                 Log.d(TAG, "load model: ${file.name}")
-                 val onnx = file.listFiles { _, name -> name.endsWith(".onnx") }
-                     ?.run { if (isNotEmpty()) first() else null }
-                     ?: return@forEach
-
-                 val dataDir = file.resolve("espeak-ng-data").takeIf { it.exists() }
-
-                 list.add(
-                     OfflineTtsConfig(
-                         model = OfflineTtsModelConfig(
-                             vits = OfflineTtsVitsModelConfig(
-                                 model = onnx.absolutePath,
-                                 lexicon = if (dataDir == null) "${file.absolutePath}/lexicon.txt" else "",
-                                 tokens = "${file.absolutePath}/tokens.txt",
-                                 dataDir = dataDir?.absolutePath ?: ""
-                             ),
-                             numThreads = 2,
-                             debug = true,
-                             provider = "cpu",
-                         ),
-                         ruleFsts = if (dataDir == null) "${file.absoluteFile}/rule.fst" else "",
-                     )
-                 )
-             }
-         }
-
-         return list
-     }
- */
-
 }

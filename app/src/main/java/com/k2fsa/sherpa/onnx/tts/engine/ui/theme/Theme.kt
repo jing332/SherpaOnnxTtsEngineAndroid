@@ -1,7 +1,9 @@
 package com.k2fsa.sherpa.onnx.tts.engine.ui.theme
 
 import android.app.Activity
+import android.graphics.Color
 import android.os.Build
+import androidx.activity.ComponentActivity
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme
@@ -10,10 +12,11 @@ import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.SideEffect
-import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.core.view.WindowCompat
+import com.gyf.immersionbar.ImmersionBar
+import com.k2fsa.sherpa.onnx.tts.engine.ui.widgets.SetupSystemBars
 
 private val DarkColorScheme = darkColorScheme(
     primary = Purple80,
@@ -57,10 +60,22 @@ fun SherpaOnnxTtsEngineTheme(
     if (!view.isInEditMode) {
         SideEffect {
             val window = (view.context as Activity).window
-            window.statusBarColor = colorScheme.primary.toArgb()
+            window.statusBarColor = /*colorScheme.primary.toArgb()*/ Color.TRANSPARENT
             WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars = darkTheme
         }
     }
+
+    //沉浸式状态栏
+    ImmersionBar.with(LocalView.current.context as ComponentActivity)
+//        .transparentStatusBar()
+//        .transparentNavigationBar() // BottomSheet 会有问题 多padding了一个输入法的高度
+        .statusBarDarkFont(!darkTheme)
+        .navigationBarDarkIcon(!darkTheme)
+        .keyboardEnable(true)
+//        .keyboardMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE)
+        .init()
+
+    SetupSystemBars()
 
     MaterialTheme(
         colorScheme = colorScheme,

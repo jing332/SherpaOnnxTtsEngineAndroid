@@ -1,4 +1,4 @@
-package com.k2fsa.sherpa.onnx.tts.engine.ui.models
+package com.k2fsa.sherpa.onnx.tts.engine.ui
 
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -11,13 +11,18 @@ import com.k2fsa.sherpa.onnx.tts.engine.utils.toCode
 import java.util.Locale
 
 @Composable
-fun ModelLanguageSelectionDialog(
+fun LanguageSelectionDialog(
     onDismissRequest: () -> Unit,
     language: String,
+    filter: List<String> = emptyList(),
     onLanguageSelected: (String) -> Unit
 ) {
     val isoLangCodes =
-        remember { Locale.getAvailableLocales().toList().map { it.toCode() }.distinct() }
+        remember {
+            Locale.getAvailableLocales().toList().map { it.toCode() }.distinct().filterNot {
+                filter.contains(it)
+            }
+        }
 
     AppSelectionDialog(
         onDismissRequest = onDismissRequest,

@@ -1,14 +1,17 @@
 package com.k2fsa.sherpa.onnx.tts.engine.ui.models
 
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Headset
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -24,15 +27,18 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.selected
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.k2fsa.sherpa.onnx.OfflineTtsConfig
 import com.k2fsa.sherpa.onnx.tts.engine.R
+import com.k2fsa.sherpa.onnx.tts.engine.conf.TtsConfig
 import com.k2fsa.sherpa.onnx.tts.engine.synthesizer.ModelManager
 import com.k2fsa.sherpa.onnx.tts.engine.synthesizer.ModelManager.toOfflineTtsConfig
 import com.k2fsa.sherpa.onnx.tts.engine.synthesizer.config.Model
 import com.k2fsa.sherpa.onnx.tts.engine.ui.AuditionDialog
-import java.util.Locale
+import com.k2fsa.sherpa.onnx.tts.engine.utils.toLocale
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -66,17 +72,22 @@ fun ModelManagerScreen(modifier: Modifier = Modifier) {
 
     LazyColumn(modifier) {
         items(vm.models.value, { it.id }) { model ->
-            val lang = remember(model.lang) { Locale(model.lang).displayName }
+            val lang = remember(model.lang) { model.lang.toLocale().displayName }
+            val selected = TtsConfig.modelId.value == model.id
             ModelItem(
                 modifier = Modifier
                     .animateItemPlacement()
                     .padding(4.dp),
                 name = model.name, lang = lang + " (${model.lang})",
+                selected = selected,
                 onAudition = {
                     showAuditionDialog = model.toOfflineTtsConfig()
                 },
                 onEdit = {
                     showModelEditDialog = model
+                },
+                onClick = {
+                    TtsConfig.modelId.value = model.id
                 }
             )
         }
@@ -88,36 +99,46 @@ private fun ModelItem(
     modifier: Modifier,
     name: String,
     lang: String,
+    selected: Boolean,
+    onClick: () -> Unit,
     onAudition: () -> Unit,
     onEdit: () -> Unit
 ) {
-    ElevatedCard(modifier = modifier) {
-        Row(
-            modifier = Modifier.padding(4.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Column(Modifier.weight(1f)) {
-                Text(
-                    text = name,
-                    style = MaterialTheme.typography.titleMedium
-                )
-                Text(
-                    text = lang,
-                    style = MaterialTheme.typography.bodyMedium
-                )
-            }
-            Row {
-                IconButton(onClick = onAudition) {
-                    Icon(
-                        Icons.Default.Headset,
-                        contentDescription = stringResource(id = R.string.audition)
+    ElevatedCard(
+        modifier = modifier.semantics {
+            this.selected = selected
+        },
+        colors = if (selected) CardDefaults.elevatedCardColors(containerColor = MaterialTheme.colorScheme.primaryContainer)
+        else CardDefaults.elevatedCardColors(),
+        onClick = onClick
+    ) {
+        Box(modifier = Modifier.padding(4.dp)) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Column(Modifier.weight(1f)) {
+                    Text(
+                        text = name,
+                        style = MaterialTheme.typography.titleMedium
+                    )
+                    Text(
+                        text = lang,
+                        style = MaterialTheme.typography.bodyMedium
                     )
                 }
-                IconButton(onClick = onEdit) {
-                    Icon(
-                        Icons.Default.Edit,
-                        contentDescription = stringResource(id = R.string.edit)
-                    )
+                Row {
+                    IconButton(onClick = onAudition) {
+                        Icon(
+                            Icons.Default.Headset,
+                            contentDescription = stringResource(id = R.string.audition)
+                        )
+                    }
+                    IconButton(onClick = onEdit) {
+                        Icon(
+                            Icons.Default.Edit,
+                            contentDescription = stringResource(id = R.string.edit)
+                        )
+                    }
                 }
             }
         }

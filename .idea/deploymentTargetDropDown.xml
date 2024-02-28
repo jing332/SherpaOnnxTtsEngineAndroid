@@ -2,6 +2,12 @@
 <project version="4">
   <component name="deploymentTargetDropDown">
     <value>
+      <entry key="PreviewSampleTextEdit">
+        <State />
+      </entry>
+      <entry key="SampleTextManagerActivity">
+        <State />
+      </entry>
       <entry key="app">
         <State />
       </entry>

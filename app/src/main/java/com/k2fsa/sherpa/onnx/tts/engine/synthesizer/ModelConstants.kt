@@ -7,4 +7,5 @@ object ModelConstants {
         app.getExternalFilesDir("model")!!.absolutePath
 
     var configPath: String = "$modelPath/config.yaml"
+    var sampleTextPath: String = "$modelPath/sampleText.yaml"
 }

@@ -6,12 +6,12 @@ import kotlinx.serialization.Serializable
 data class Model(
     val id: String,
     val name: String = id,
-    val onnx: String = "",
-    val dataDir: String = "",
+    val onnx: String,
+    val dataDir: String,
 
-    val lexicon: String = "",
-    val ruleFsts: String = "",
-    val tokens: String = "",
+    val lexicon: String,
+    val ruleFsts: String,
+    val tokens: String,
 
     val lang: String,
 )
