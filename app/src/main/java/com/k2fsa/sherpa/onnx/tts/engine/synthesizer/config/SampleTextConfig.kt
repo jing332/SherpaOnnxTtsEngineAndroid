@@ -27,4 +27,10 @@ object SampleTextConfig :
             this[code] = list
         })
     }
+
+    fun remove(code: String) {
+        updateConfig(config.toMutableMap().apply {
+            this.remove(code)
+        })
+    }
 }

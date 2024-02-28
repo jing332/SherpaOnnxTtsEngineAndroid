@@ -65,3 +65,13 @@ fun String.toLocale(): Locale {
         else -> Locale(this)
     }
 }
+
+fun newLocaleFromCode(code: String): Locale = code.toLocale()
+
+fun Locale.toCode(): String {
+    return try {
+        "$language-$country"
+    } catch (e: Exception) {
+        language
+    }.trimEnd('-')
+}

@@ -1,5 +1,6 @@
 package com.k2fsa.sherpa.onnx.tts.engine.utils
 
+import android.annotation.SuppressLint
 import android.app.Activity
 import android.app.Notification
 import android.app.Service
@@ -14,6 +15,7 @@ import android.graphics.Rect
 import android.graphics.Typeface
 import android.net.Uri
 import android.os.Build
+import android.os.Bundle
 import android.os.SystemClock
 import android.text.Spanned
 import android.text.style.ForegroundColorSpan
@@ -52,26 +54,78 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
+import androidx.core.net.toUri
 import androidx.lifecycle.LifecycleOwner
+import androidx.navigation.NavController
+import androidx.navigation.NavDeepLinkRequest
+import androidx.navigation.NavDestination
+import androidx.navigation.NavHostController
+import androidx.navigation.NavOptions
+import androidx.navigation.Navigator
 import java.util.Locale
 
-fun newLocaleFromCode(code: String): Locale {
-    val parts = code.split("-")
 
-    return when (parts.size) {
-        1 -> Locale(parts[0])
-        2 -> Locale(parts[0], parts[1])
-        else -> Locale(code)
+@SuppressLint("RestrictedApi")
+fun NavController.navigate(
+    route: String,
+    argsBuilder: Bundle.() -> Unit = {},
+    navOptions: NavOptions? = null,
+    navigatorExtras: Navigator.Extras? = null
+) {
+    navigate(route, Bundle().apply(argsBuilder), navOptions, navigatorExtras)
+}
+
+/*
+* 可传递 Bundle 到 Navigation
+* */
+@SuppressLint("RestrictedApi")
+fun NavController.navigate(
+    route: String,
+    args: Bundle,
+    navOptions: NavOptions? = null,
+    navigatorExtras: Navigator.Extras? = null
+) {
+    val routeLink = NavDeepLinkRequest
+        .Builder
+        .fromUri(NavDestination.createRoute(route).toUri())
+        .build()
+
+    val deepLinkMatch = graph.matchDeepLink(routeLink)
+    if (deepLinkMatch != null) {
+        val destination = deepLinkMatch.destination
+        val id = destination.id
+        navigate(id, args, navOptions, navigatorExtras)
+    } else {
+        navigate(route, navOptions, navigatorExtras)
     }
 }
 
-fun Locale.toCode(): String {
-    return try {
-        "$language-$country"
-    } catch (e: Exception) {
-        language
-    }.trimEnd('-')
+/**
+ * 单例并清空其他栈
+ */
+fun NavHostController.navigateSingleTop(
+    route: String,
+    args: Bundle? = null,
+    popUpToMain: Boolean = false
+) {
+    val navController = this
+    val navOptions = NavOptions.Builder()
+        .setLaunchSingleTop(true)
+        .apply {
+            if (popUpToMain) setPopUpTo(
+                navController.graph.startDestinationId,
+                inclusive = false,
+                saveState = true
+            )
+        }
+        .setRestoreState(true)
+        .build()
+    if (args == null)
+        navController.navigate(route, navOptions)
+    else
+        navController.navigate(route, args, navOptions)
 }
+
 
 fun FloatArray.toByteArray(): ByteArray {
     // byteArray is actually a ShortArray

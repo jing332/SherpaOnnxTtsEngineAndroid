@@ -6,6 +6,7 @@ import com.k2fsa.sherpa.onnx.tts.engine.utils.longToast
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import java.io.File
+import java.io.FileNotFoundException
 import java.io.InputStream
 
 open class ImplYamlConfig<T>(val filePath: String, val factory: () -> T) {
@@ -52,11 +53,17 @@ open class ImplYamlConfig<T>(val filePath: String, val factory: () -> T) {
             file.inputStream().use {
                 return decode(it)
             }
+
         } catch (e: Exception) {
             Log.e(ConfigManager.TAG, "readConfig: ", e)
-            errorHandler(e)
+
             val obj = factory()
-//            write(config = obj)
+
+            if (e is FileNotFoundException)
+                write(config = obj)
+            else
+                errorHandler(e)
+
             return obj
         }
     }

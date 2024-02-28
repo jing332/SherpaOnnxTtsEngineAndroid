@@ -2,12 +2,14 @@ package com.k2fsa.sherpa.onnx.tts.engine.ui.sampletext
 
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.DeleteForever
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -26,6 +28,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.k2fsa.sherpa.onnx.tts.engine.R
+import com.k2fsa.sherpa.onnx.tts.engine.ui.ConfirmDeleteDialog
 import com.k2fsa.sherpa.onnx.tts.engine.ui.LanguageSelectionDialog
 import com.k2fsa.sherpa.onnx.tts.engine.utils.newLocaleFromCode
 
@@ -75,6 +78,18 @@ fun SampleTextManagerContent(modifier: Modifier, vm: SampleTextMangerViewModel =
         )
     }
 
+    var showDeleteDialog by remember { mutableStateOf<String?>(null) }
+    if (showDeleteDialog != null) {
+        val code = showDeleteDialog!!
+        ConfirmDeleteDialog(
+            onDismissRequest = { showDeleteDialog = null },
+            name = code
+        ) {
+            vm.removeLanguage(code)
+            showDeleteDialog = null
+        }
+    }
+
     LazyColumn(modifier) {
         items(vm.languages) {
             val locale = remember(it) { newLocaleFromCode(it) }
@@ -86,9 +101,8 @@ fun SampleTextManagerContent(modifier: Modifier, vm: SampleTextMangerViewModel =
                     .padding(4.dp),
                 name = displayName,
                 code = it,
-                onClick = {
-                    showEditDialog = it
-                }
+                onClick = { showEditDialog = it },
+                onDelete = { showDeleteDialog = it }
             )
         }
     }
@@ -96,11 +110,23 @@ fun SampleTextManagerContent(modifier: Modifier, vm: SampleTextMangerViewModel =
 
 
 @Composable
-fun LanguageItem(modifier: Modifier, name: String, code: String, onClick: () -> Unit) {
+fun LanguageItem(
+    modifier: Modifier,
+    name: String,
+    code: String,
+    onClick: () -> Unit,
+    onDelete: () -> Unit
+) {
     ElevatedCard(modifier = modifier, onClick = onClick) {
-        Column(Modifier.padding(4.dp)) {
-            Text(text = name, style = MaterialTheme.typography.titleMedium)
-            Text(text = code, style = MaterialTheme.typography.bodyMedium)
+        Row(Modifier.padding(4.dp)) {
+            Column(Modifier.weight(1f)) {
+                Text(text = name, style = MaterialTheme.typography.titleMedium)
+                Text(text = code, style = MaterialTheme.typography.bodyMedium)
+            }
+
+            IconButton(onClick = onDelete) {
+                Icon(Icons.Default.DeleteForever, stringResource(id = R.string.delete))
+            }
         }
     }
 }

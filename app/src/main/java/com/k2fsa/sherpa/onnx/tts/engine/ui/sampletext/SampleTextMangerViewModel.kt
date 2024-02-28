@@ -35,4 +35,8 @@ class SampleTextMangerViewModel : ViewModel() {
     fun addLanguage(code: String) {
         SampleTextConfig[code] = emptyList()
     }
+
+    fun removeLanguage(code: String) {
+        SampleTextConfig.remove(code)
+    }
 }

@@ -35,6 +35,7 @@ import com.k2fsa.sherpa.onnx.tts.engine.R
 import com.k2fsa.sherpa.onnx.tts.engine.ui.models.ModelManagerScreen
 import com.k2fsa.sherpa.onnx.tts.engine.ui.settings.SettingsScreen
 import com.k2fsa.sherpa.onnx.tts.engine.ui.theme.SherpaOnnxTtsEngineTheme
+import com.k2fsa.sherpa.onnx.tts.engine.utils.navigateSingleTop
 import com.k2fsa.sherpa.onnx.tts.engine.utils.toast
 
 const val TAG = "sherpa-onnx-tts-engine"
@@ -93,8 +94,7 @@ class MainActivity : ComponentActivity() {
                                 alwaysShowLabel = false,
                                 selected = containsRoute(id),
                                 onClick = {
-
-                                    navController.navigate(id)
+                                    navController.navigateSingleTop(id, popUpToMain = true)
                                 },
                                 icon = { Icon(icon, contentDescription = null) },
                                 label = {
