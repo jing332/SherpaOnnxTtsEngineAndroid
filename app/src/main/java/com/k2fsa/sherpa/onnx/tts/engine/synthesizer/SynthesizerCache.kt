@@ -1,5 +1,6 @@
 package com.k2fsa.sherpa.onnx.tts.engine.synthesizer
 
+import com.k2fsa.sherpa.onnx.tts.engine.conf.TtsConfig
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.DelayQueue
 import java.util.concurrent.Delayed
@@ -11,7 +12,13 @@ interface ImplCache {
     fun destroy()
 }
 
+
 class SynthesizerCache {
+    companion object {
+        private val delayTime: Int
+            get() = 1000 * 60 * TtsConfig.timeoutDestruction.value
+    }
+
     private val delayQueue = DelayQueue<DelayedDestroyTask>()
     private val queueMap = ConcurrentHashMap<String, DelayedDestroyTask>()
     private val executor = Executors.newSingleThreadExecutor()
@@ -38,7 +45,8 @@ class SynthesizerCache {
     }
 
     fun cache(id: String, obj: ImplCache) {
-        val task = DelayedDestroyTask(delayTime = 1000 * 60 * 3, id, obj)
+        val task =
+            DelayedDestroyTask(delayTime = delayTime, id, obj)
         delayQueue.add(task)
         queueMap[id] = task
         ensureTaskRunning()
@@ -54,7 +62,7 @@ class SynthesizerCache {
         return null
     }
 
-    class DelayedDestroyTask(private val delayTime: Long, val id: String, val obj: ImplCache) :
+    class DelayedDestroyTask(private val delayTime: Int, val id: String, val obj: ImplCache) :
         Delayed {
         private var expireTime: Long = 0L
 

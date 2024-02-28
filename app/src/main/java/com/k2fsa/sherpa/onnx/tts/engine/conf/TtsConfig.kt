@@ -2,7 +2,6 @@ package com.k2fsa.sherpa.onnx.tts.engine.conf
 
 import com.funny.data_saver.core.DataSaverPreferences
 import com.funny.data_saver.core.mutableDataSaverStateOf
-import com.k2fsa.sherpa.onnx.tts.engine.R
 import com.k2fsa.sherpa.onnx.tts.engine.App
 
 object TtsConfig {
@@ -12,6 +11,12 @@ object TtsConfig {
         dataSaverInterface = dataSaverPref,
         key = "modelId",
         initialValue = ""
+    )
+
+    val timeoutDestruction = mutableDataSaverStateOf(
+        dataSaverInterface = dataSaverPref,
+        key = "timeoutDestruction",
+        initialValue = 0
     )
 
 }
