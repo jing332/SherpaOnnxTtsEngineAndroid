@@ -26,4 +26,6 @@
     <string name="timeout_destruction_summary">The model is automatically destroyed after it has not been used for a specified period of time to save running memory.</string>
     <string name="press_back_again_to_exit">Press back again to exit</string>
     <string name="is_confirm_delete">Do you want to delete it?</string>
+    <string name="more_options">More options</string>
+    <string name="delete_model_from_config_desc">This will only be removed from the configuration file and will not delete the model file.</string>
 </resources>

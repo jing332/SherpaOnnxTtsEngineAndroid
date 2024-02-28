@@ -10,10 +10,14 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AddToPhotos
+import androidx.compose.material.icons.filled.DeleteForever
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Headset
+import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.TextFields
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -43,6 +47,7 @@ import com.k2fsa.sherpa.onnx.tts.engine.synthesizer.ModelManager
 import com.k2fsa.sherpa.onnx.tts.engine.synthesizer.ModelManager.toOfflineTtsConfig
 import com.k2fsa.sherpa.onnx.tts.engine.synthesizer.config.Model
 import com.k2fsa.sherpa.onnx.tts.engine.ui.AuditionDialog
+import com.k2fsa.sherpa.onnx.tts.engine.ui.ConfirmDeleteDialog
 import com.k2fsa.sherpa.onnx.tts.engine.ui.ShadowReorderableItem
 import com.k2fsa.sherpa.onnx.tts.engine.ui.sampletext.SampleTextManagerActivity
 import com.k2fsa.sherpa.onnx.tts.engine.utils.startActivity
@@ -74,7 +79,11 @@ fun ModelManagerScreen() {
             }
         })
     }) {
-        ModelManagerScreenContent(Modifier.padding(it).fillMaxSize())
+        ModelManagerScreenContent(
+            Modifier
+                .padding(it)
+                .fillMaxSize()
+        )
     }
 }
 
@@ -133,6 +142,9 @@ fun ModelManagerScreenContent(modifier: Modifier = Modifier) {
                     },
                     onClick = {
                         TtsConfig.modelId.value = model.id
+                    },
+                    onDelete = {
+                        vm.deleteModel(model)
                     }
                 )
             }
@@ -148,8 +160,18 @@ private fun ModelItem(
     selected: Boolean,
     onClick: () -> Unit,
     onAudition: () -> Unit,
-    onEdit: () -> Unit
+    onEdit: () -> Unit,
+    onDelete: () -> Unit
 ) {
+    var showDeleteConfirmDialog by remember { mutableStateOf(false) }
+    if (showDeleteConfirmDialog)
+        ConfirmDeleteDialog(
+            onDismissRequest = { showDeleteConfirmDialog = false }, name = name,
+            desc = stringResource(R.string.delete_model_from_config_desc)
+        ) {
+            onDelete()
+        }
+
     ElevatedCard(
         modifier = modifier.semantics {
             this.selected = selected
@@ -179,11 +201,41 @@ private fun ModelItem(
                             contentDescription = stringResource(id = R.string.audition)
                         )
                     }
-                    IconButton(onClick = onEdit) {
+
+                    var showOptions by remember { mutableStateOf(false) }
+                    IconButton(onClick = { showOptions = true }) {
                         Icon(
-                            Icons.Default.Edit,
-                            contentDescription = stringResource(id = R.string.edit)
+                            Icons.Default.MoreVert,
+                            contentDescription = stringResource(id = R.string.more_options)
                         )
+
+                        DropdownMenu(
+                            expanded = showOptions,
+                            onDismissRequest = { showOptions = false }) {
+                            DropdownMenuItem(
+                                text = { Text(stringResource(id = R.string.edit)) },
+                                leadingIcon = {
+                                    Icon(Icons.Default.Edit, null)
+                                },
+                                onClick = {
+                                    showOptions = false
+                                    onEdit()
+                                }
+                            )
+
+                            DropdownMenuItem(
+                                text = { Text(stringResource(id = R.string.delete)) },
+                                leadingIcon = {
+                                    Icon(Icons.Default.DeleteForever, null)
+                                },
+                                onClick = {
+                                    showOptions = false
+                                    showDeleteConfirmDialog = true
+                                }
+                            )
+
+
+                        }
                     }
                 }
             }

@@ -26,4 +26,8 @@ class ModelManagerViewModel : ViewModel() {
         Collections.swap(list, from, to)
         ModelManager.updateModels(list)
     }
+
+    fun deleteModel(model: Model) {
+        ModelManager.removeModel(model)
+    }
 }

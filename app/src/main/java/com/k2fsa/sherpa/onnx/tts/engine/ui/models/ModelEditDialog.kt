@@ -15,7 +15,6 @@ import com.k2fsa.sherpa.onnx.tts.engine.R
 import com.k2fsa.sherpa.onnx.tts.engine.synthesizer.config.Model
 import com.k2fsa.sherpa.onnx.tts.engine.ui.widgets.AppDialog
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ModelEditDialog(
     onDismissRequest: () -> Unit,
