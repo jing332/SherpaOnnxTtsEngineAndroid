@@ -40,6 +40,12 @@ fun Locale.toIso3Code(): String {
     }
 }
 
+fun String.toLocaleFromIso3(): Locale? {
+    return Locale.getAvailableLocales().find { it.toIso3Code() == this }?.let {
+        return it
+    }
+}
+
 fun Locale.equalsIso3(
     iso3Lang: String,
     iso3Country: String = "",

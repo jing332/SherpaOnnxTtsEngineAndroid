@@ -157,7 +157,9 @@ class TtsService : TextToSpeechService() {
 
     override fun onIsValidVoiceName(voiceName: String?): Int {
         Log.i(TAG, "onIsValidVoiceName: $voiceName")
-        return if (ModelManager.models().find { it.id == voiceName } != null) {
+        return if (voiceName == NOT_SET_VOICE_NAME ||
+            ModelManager.models().find { it.id == voiceName } != null
+        ) {
             TextToSpeech.SUCCESS
         } else {
             TextToSpeech.ERROR

@@ -19,8 +19,8 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import com.k2fsa.sherpa.onnx.OfflineTtsConfig
-import com.k2fsa.sherpa.onnx.tts.engine.conf.AppConfig
 import com.k2fsa.sherpa.onnx.tts.engine.R
+import com.k2fsa.sherpa.onnx.tts.engine.synthesizer.SampleTextManager
 import com.k2fsa.sherpa.onnx.tts.engine.synthesizer.SynthesizerManager
 import com.k2fsa.sherpa.onnx.tts.engine.utils.PcmAudioPlayer
 import kotlinx.coroutines.Dispatchers
@@ -51,12 +51,12 @@ private fun getAudioTrack(sampleRate: Int): AudioTrack {
     )
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AuditionDialog(
     onDismissRequest: () -> Unit,
-    text: String = AppConfig.sampleText.value,
-    offlineTtsConfig: OfflineTtsConfig
+    offlineTtsConfig: OfflineTtsConfig,
+    lang: String = "",
+    text: String = SampleTextManager.getSampleText(lang),
 ) {
     val scope = rememberCoroutineScope()
     val context = LocalContext.current

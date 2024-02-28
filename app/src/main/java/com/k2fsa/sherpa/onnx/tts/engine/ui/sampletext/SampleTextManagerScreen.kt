@@ -31,7 +31,7 @@ import com.k2fsa.sherpa.onnx.tts.engine.utils.newLocaleFromCode
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SampleTextManager() {
+fun SampleTextManagerScreen() {
     val vm: SampleTextMangerViewModel = viewModel()
 
     var showAddLanguage by remember { mutableStateOf(false) }

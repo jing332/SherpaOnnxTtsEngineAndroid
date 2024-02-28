@@ -42,23 +42,22 @@ import com.k2fsa.sherpa.onnx.tts.engine.synthesizer.ModelManager
 import com.k2fsa.sherpa.onnx.tts.engine.synthesizer.ModelManager.toOfflineTtsConfig
 import com.k2fsa.sherpa.onnx.tts.engine.synthesizer.config.Model
 import com.k2fsa.sherpa.onnx.tts.engine.ui.AuditionDialog
-import com.k2fsa.sherpa.onnx.tts.engine.ui.SampleTextEditDialog
+import com.k2fsa.sherpa.onnx.tts.engine.ui.sampletext.SampleTextManagerActivity
+import com.k2fsa.sherpa.onnx.tts.engine.utils.startActivity
 import com.k2fsa.sherpa.onnx.tts.engine.utils.toLocale
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ModelManagerScreen() {
-    var showSampleTextEditDialog by remember { mutableStateOf(false) }
-    if (showSampleTextEditDialog)
-        SampleTextEditDialog { showSampleTextEditDialog = false }
-
     var showImportDialog by remember { mutableStateOf(false) }
     if (showImportDialog)
         ImportModelsDialog { showImportDialog = false }
-
+    val context = LocalContext.current
     Scaffold(topBar = {
         TopAppBar(title = { Text("Next-gen Kaldi: TTS") }, actions = {
-            IconButton(onClick = { showSampleTextEditDialog = true }) {
+            IconButton(onClick = {
+                context.startActivity(SampleTextManagerActivity::class.java)
+            }) {
                 Icon(Icons.Default.TextFields, stringResource(R.string.sample_text))
             }
 
@@ -87,11 +86,12 @@ fun ModelManagerScreenContent(modifier: Modifier = Modifier) {
         println("models: ${vm.models.value}")
     }
 
-    var showAuditionDialog by remember { mutableStateOf<OfflineTtsConfig?>(null) }
+    var showAuditionDialog by remember { mutableStateOf<Pair<String, OfflineTtsConfig>?>(null) }
     if (showAuditionDialog != null) {
         AuditionDialog(
             onDismissRequest = { showAuditionDialog = null },
-            offlineTtsConfig = showAuditionDialog!!
+            offlineTtsConfig = showAuditionDialog!!.second,
+            lang = showAuditionDialog!!.first
         )
     }
 
@@ -115,7 +115,7 @@ fun ModelManagerScreenContent(modifier: Modifier = Modifier) {
                 name = model.name, lang = lang + " (${model.lang})",
                 selected = selected,
                 onAudition = {
-                    showAuditionDialog = model.toOfflineTtsConfig()
+                    showAuditionDialog = model.lang to model.toOfflineTtsConfig()
                 },
                 onEdit = {
                     showModelEditDialog = model
