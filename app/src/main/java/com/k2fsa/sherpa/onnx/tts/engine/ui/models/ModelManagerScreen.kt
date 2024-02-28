@@ -4,6 +4,7 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -42,9 +43,13 @@ import com.k2fsa.sherpa.onnx.tts.engine.synthesizer.ModelManager
 import com.k2fsa.sherpa.onnx.tts.engine.synthesizer.ModelManager.toOfflineTtsConfig
 import com.k2fsa.sherpa.onnx.tts.engine.synthesizer.config.Model
 import com.k2fsa.sherpa.onnx.tts.engine.ui.AuditionDialog
+import com.k2fsa.sherpa.onnx.tts.engine.ui.ShadowReorderableItem
 import com.k2fsa.sherpa.onnx.tts.engine.ui.sampletext.SampleTextManagerActivity
 import com.k2fsa.sherpa.onnx.tts.engine.utils.startActivity
 import com.k2fsa.sherpa.onnx.tts.engine.utils.toLocale
+import org.burnoutcrew.reorderable.detectReorderAfterLongPress
+import org.burnoutcrew.reorderable.rememberReorderableLazyListState
+import org.burnoutcrew.reorderable.reorderable
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -69,7 +74,7 @@ fun ModelManagerScreen() {
             }
         })
     }) {
-        ModelManagerScreenContent(Modifier.padding(it))
+        ModelManagerScreenContent(Modifier.padding(it).fillMaxSize())
     }
 }
 
@@ -100,30 +105,37 @@ fun ModelManagerScreenContent(modifier: Modifier = Modifier) {
         ModelEditDialog(
             onDismissRequest = { showModelEditDialog = null },
             model = showModelEditDialog!!,
-            onSave = { ModelManager.updateModel(it) }
+            onSave = { ModelManager.updateModels(it) }
         )
     }
 
-    LazyColumn(modifier) {
+    val reorderState = rememberReorderableLazyListState(onMove = { from, to ->
+        vm.moveModel(from.index, to.index)
+    })
+
+    LazyColumn(modifier = modifier.reorderable(reorderState), state = reorderState.listState) {
         items(vm.models.value, { it.id }) { model ->
             val lang = remember(model.lang) { model.lang.toLocale().displayName }
             val selected = TtsConfig.modelId.value == model.id
-            ModelItem(
-                modifier = Modifier
-                    .animateItemPlacement()
-                    .padding(4.dp),
-                name = model.name, lang = lang + " (${model.lang})",
-                selected = selected,
-                onAudition = {
-                    showAuditionDialog = model.lang to model.toOfflineTtsConfig()
-                },
-                onEdit = {
-                    showModelEditDialog = model
-                },
-                onClick = {
-                    TtsConfig.modelId.value = model.id
-                }
-            )
+            ShadowReorderableItem(reorderableState = reorderState, key = model.id) {
+                ModelItem(
+                    modifier = Modifier
+                        .animateItemPlacement()
+                        .padding(4.dp)
+                        .detectReorderAfterLongPress(reorderState),
+                    name = model.name, lang = lang + " (${model.lang})",
+                    selected = selected,
+                    onAudition = {
+                        showAuditionDialog = model.lang to model.toOfflineTtsConfig()
+                    },
+                    onEdit = {
+                        showModelEditDialog = model
+                    },
+                    onClick = {
+                        TtsConfig.modelId.value = model.id
+                    }
+                )
+            }
         }
     }
 }

@@ -65,12 +65,19 @@ object ModelManager {
         notifyModelsChange()
     }
 
-    fun updateModel(model: Model) {
+    fun updateModels(model: Model) {
         models.indexOfFirst { it.id == model.id }.takeIf { it != -1 }?.let {
             models[it] = model.copy()
             ConfigManager.updateConfig(ConfigManager.config.copy(models = models))
             notifyModelsChange()
         }
+    }
+
+    fun updateModels(model: List<Model>) {
+        models.clear()
+        models.addAll(model)
+        ConfigManager.updateConfig(ConfigManager.config.copy(models = models))
+        notifyModelsChange()
     }
 
     fun getNotAddedModels(context: Context): List<Model> {

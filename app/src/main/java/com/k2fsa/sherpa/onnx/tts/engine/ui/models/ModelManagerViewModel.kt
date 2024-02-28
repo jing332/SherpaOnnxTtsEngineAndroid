@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import com.k2fsa.sherpa.onnx.tts.engine.synthesizer.ModelManager
 import com.k2fsa.sherpa.onnx.tts.engine.synthesizer.config.Model
 import kotlinx.coroutines.launch
+import java.util.Collections
 
 class ModelManagerViewModel : ViewModel() {
     val models = mutableStateOf<List<Model>>(emptyList())
@@ -18,5 +19,11 @@ class ModelManagerViewModel : ViewModel() {
                 models.value = it
             }
         }
+    }
+
+    fun moveModel(from: Int, to: Int) {
+        val list = ModelManager.models().toMutableList()
+        Collections.swap(list, from, to)
+        ModelManager.updateModels(list)
     }
 }
