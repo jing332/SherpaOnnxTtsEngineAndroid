@@ -7,3 +7,6 @@
 
 > [!NOTE]
 > On Android 13+ devices, use [MT Manager](https://mt2.cn/download/) or [Material Files](https://github.com/zhanghai/MaterialFiles) to access the Android/data path".
+
+# Preview
+<img src="./images/1.jpg" height="150px" alt="1">
