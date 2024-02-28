@@ -3,8 +3,16 @@ package com.k2fsa.sherpa.onnx.tts.engine.ui.models
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.FilterList
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -52,6 +60,16 @@ fun ModelEditScreen(
             label = { Text(text = stringResource(R.string.onnx_model_file)) }
         )
 
+        var showLangSelectDialog by remember { mutableStateOf(false) }
+        if (showLangSelectDialog)
+            ModelLanguageSelectionDialog(
+                onDismissRequest = { showLangSelectDialog = false },
+                language = model.lang
+            ) {
+                onModelChange(model.copy(lang = it))
+                showLangSelectDialog = false
+            }
+
         DenseOutlinedField(
             modifier = Modifier
                 .fillMaxWidth()
@@ -60,7 +78,15 @@ fun ModelEditScreen(
             onValueChange = {
                 onModelChange(model.copy(lang = it))
             },
-            label = { Text(text = stringResource(R.string.language)) }
+            label = { Text(text = stringResource(R.string.language)) },
+            trailingIcon = {
+                IconButton(onClick = { showLangSelectDialog = true }) {
+                    Icon(
+                        Icons.Default.FilterList,
+                        contentDescription = stringResource(id = R.string.language)
+                    )
+                }
+            }
         )
     }
 }

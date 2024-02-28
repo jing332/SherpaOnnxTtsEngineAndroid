@@ -5,9 +5,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.k2fsa.sherpa.onnx.tts.engine.synthesizer.ModelManager
 import com.k2fsa.sherpa.onnx.tts.engine.synthesizer.config.Model
-import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.flow.conflate
-import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 
 class ModelManagerViewModel : ViewModel() {
@@ -15,11 +12,10 @@ class ModelManagerViewModel : ViewModel() {
 
     fun load() {
         viewModelScope.launch {
-            ModelManager.modelsFlow.onEach {
+            ModelManager.load()
+            ModelManager.modelsFlow.collect {
                 println("collect: ${it.hashCode()}")
                 models.value = it
-            }.collectLatest{
-
             }
         }
     }

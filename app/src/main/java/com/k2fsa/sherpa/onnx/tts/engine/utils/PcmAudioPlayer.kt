@@ -1,4 +1,4 @@
-package com.k2fsa.sherpa.onnx.tts.engine.util
+package com.k2fsa.sherpa.onnx.tts.engine.utils
 
 import android.media.AudioFormat
 import android.media.AudioManager

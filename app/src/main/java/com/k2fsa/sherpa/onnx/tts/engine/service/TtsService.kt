@@ -5,12 +5,23 @@ import android.speech.tts.SynthesisCallback
 import android.speech.tts.SynthesisRequest
 import android.speech.tts.TextToSpeech
 import android.speech.tts.TextToSpeechService
+import android.speech.tts.Voice
 import android.util.Log
+import com.k2fsa.sherpa.onnx.tts.engine.R
 import com.k2fsa.sherpa.onnx.tts.engine.conf.TtsConfig
 import com.k2fsa.sherpa.onnx.tts.engine.synthesizer.ModelManager
 import com.k2fsa.sherpa.onnx.tts.engine.synthesizer.ModelManager.toOfflineTtsConfig
 import com.k2fsa.sherpa.onnx.tts.engine.synthesizer.SynthesizerManager
+import com.k2fsa.sherpa.onnx.tts.engine.synthesizer.config.Model
 import com.k2fsa.sherpa.onnx.tts.engine.ui.TAG
+import com.k2fsa.sherpa.onnx.tts.engine.ui.models.ModelManagerScreen
+import com.k2fsa.sherpa.onnx.tts.engine.utils.equalsIso3
+import com.k2fsa.sherpa.onnx.tts.engine.utils.longToast
+import com.k2fsa.sherpa.onnx.tts.engine.utils.newLocaleFromCode
+import com.k2fsa.sherpa.onnx.tts.engine.utils.toByteArray
+import com.k2fsa.sherpa.onnx.tts.engine.utils.toLocale
+import java.util.Locale
+import kotlin.math.min
 
 /*
 https://developer.android.com/reference/java/util/Locale#getISO3Language()
@@ -59,11 +70,14 @@ Failed to get default language from engine com.k2fsa.sherpa.chapter5
 */
 
 class TtsService : TextToSpeechService() {
+    private var languages: List<Locale> = emptyList()
     override fun onCreate() {
         Log.i(TAG, "onCreate tts service")
-        super.onCreate()
 
         ModelManager.load()
+        languages = ModelManager.languages().map { newLocaleFromCode(it) }
+
+        super.onCreate()
     }
 
     override fun onDestroy() {
@@ -73,35 +87,87 @@ class TtsService : TextToSpeechService() {
 
     // https://developer.android.com/reference/kotlin/android/speech/tts/TextToSpeechService#onislanguageavailable
     override fun onIsLanguageAvailable(_lang: String?, _country: String?, _variant: String?): Int {
+        Log.d(TAG, "onIsLanguageAvailable: $_lang, $_country $_variant")
         val lang = _lang ?: ""
+        val country = _country ?: ""
 
-        if (lang == "eng") {
-            return TextToSpeech.LANG_AVAILABLE
+        languages.forEach {
+            val l = it.isO3Language
+            val c = it.isO3Country
+
+            if (l == lang && c == country) {
+                return TextToSpeech.LANG_COUNTRY_AVAILABLE
+            } else if (l == lang) {
+                return TextToSpeech.LANG_AVAILABLE
+            }
         }
 
         return TextToSpeech.LANG_NOT_SUPPORTED
     }
 
-    override fun onGetLanguage(): Array<String> {
-        return arrayOf("eng", "", "")
-    }
-
     // https://developer.android.com/reference/kotlin/android/speech/tts/TextToSpeechService#onLoadLanguage(kotlin.String,%20kotlin.String,%20kotlin.String)
     override fun onLoadLanguage(_lang: String?, _country: String?, _variant: String?): Int {
-        Log.i(TAG, "onLoadLanguage: $_lang, $_country")
-        val lang = _lang ?: ""
+        return onIsLanguageAvailable(_lang, _country, _variant)
+    }
 
-        return if (lang == "eng") {
-            Log.i(TAG, "creating tts, lang :$lang")
-//            TtsEngine.createTts(application)
-            TextToSpeech.LANG_AVAILABLE
+    override fun onGetLanguage(): Array<String> {
+        return arrayOf("", "", "")
+    }
+
+    override fun onLoadVoice(voiceName: String?): Int {
+        Log.i(TAG, "onLoadVoice: $voiceName")
+        return onIsValidVoiceName(voiceName)
+    }
+
+    override fun onGetVoices(): MutableList<Voice> {
+        val list = mutableListOf<Voice>()
+        ModelManager.models().forEach {
+            list.add(
+                Voice(
+                    /* name = */ it.id,
+                    /* locale = */ newLocaleFromCode(it.lang),
+                    /* quality = */ Voice.QUALITY_NORMAL,
+                    /* latency = */ Voice.LATENCY_NORMAL,
+                    /* requiresNetworkConnection = */ false,
+                    /* features = */ setOf(it.name)
+                )
+            )
+        }
+
+        Log.i(TAG, "onGetVoices: ${list.size}")
+        return list
+    }
+
+    override fun onIsValidVoiceName(voiceName: String?): Int {
+        Log.i(TAG, "onIsValidVoiceName: $voiceName")
+        return if (ModelManager.models().find { it.id == voiceName } != null) {
+            TextToSpeech.SUCCESS
         } else {
-//            Log.i(TAG, "lang $lang not supported, tts engine lang: ${TtsEngine.lang}")
-            TextToSpeech.LANG_NOT_SUPPORTED
+            TextToSpeech.ERROR
         }
     }
 
+    override fun onGetDefaultVoiceNameFor(
+        lang: String?,
+        country: String?,
+        variant: String?
+    ): String {
+        Log.i(TAG, "onGetDefaultVoiceNameFor: $lang, $country, $variant")
+        val m =
+            ModelManager.models().find { it.lang.toLocale().equalsIso3(lang ?: "", country ?: "") }
+        return if (m == null) {
+            ""
+        } else m.id
+    }
+
     override fun onStop() {}
+
+    private fun getTtsConfig(voiceName: String?): Model? {
+        return ModelManager.models()
+            .run { if (voiceName == null) null else this }?.find { it.id == voiceName }
+            ?: ModelManager.models().find { it.id == TtsConfig.modelId.value }
+            ?: ModelManager.models().getOrNull(0)
+    }
 
     override fun onSynthesizeText(request: SynthesisRequest?, callback: SynthesisCallback?) {
         if (request == null || callback == null) {
@@ -111,6 +177,7 @@ class TtsService : TextToSpeechService() {
         val country = request.country
         val variant = request.variant
         val text = request.charSequenceText.toString()
+        val voiceName: String? = request.voiceName
 
         val ret = onIsLanguageAvailable(language, country, variant)
         if (ret == TextToSpeech.LANG_NOT_SUPPORTED) {
@@ -118,12 +185,12 @@ class TtsService : TextToSpeechService() {
             return
         }
         Log.i(TAG, "text: $text")
-        val ttsCfg = ModelManager.models()
-            .find { it.id == TtsConfig.modelId.value }
-            ?: ModelManager.models().getOrNull(0)
 
+        val ttsCfg = getTtsConfig(voiceName)
+        Log.i(TAG, "ttsConfig: $ttsCfg")
         if (ttsCfg == null) {
             Log.e(TAG, "tts not found")
+            longToast(R.string.tts_config_not_set)
             callback.error()
             return
         }
@@ -142,11 +209,11 @@ class TtsService : TextToSpeechService() {
 
         val ttsCallback = { floatSamples: FloatArray ->
             // convert FloatArray to ByteArray
-            val samples = floatArrayToByteArray(floatSamples)
+            val samples = floatSamples.toByteArray()
             val maxBufferSize: Int = callback.maxBufferSize
             var offset = 0
             while (offset < samples.size) {
-                val bytesToWrite = Math.min(maxBufferSize, samples.size - offset)
+                val bytesToWrite = min(maxBufferSize, samples.size - offset)
                 callback.audioAvailable(samples, offset, bytesToWrite)
                 offset += bytesToWrite
             }
@@ -156,21 +223,10 @@ class TtsService : TextToSpeechService() {
         Log.i(TAG, "text: $text")
         tts.generateWithCallback(
             text = text,
-            speed = 1f,
+            speed = request.speechRate / 6f,
             callback = ttsCallback,
         )
 
         callback.done()
-    }
-
-    private fun floatArrayToByteArray(audio: FloatArray): ByteArray {
-        // byteArray is actually a ShortArray
-        val byteArray = ByteArray(audio.size * 2)
-        for (i in audio.indices) {
-            val sample = (audio[i] * 32767).toInt()
-            byteArray[2 * i] = sample.toByte()
-            byteArray[2 * i + 1] = (sample shr 8).toByte()
-        }
-        return byteArray
     }
 }

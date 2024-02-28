@@ -1,3 +1,7 @@
+import java.util.Date
+import java.util.TimeZone
+import java.text.SimpleDateFormat
+
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
@@ -5,6 +9,26 @@ plugins {
 
 }
 
+val buildTime: Long
+    get() {
+        val t = Date().time / 1000
+        return t
+    }
+
+val releaseTime: String
+    get() {
+        val sdf = SimpleDateFormat("yy.MMddHH")
+        sdf.timeZone = TimeZone.getTimeZone("GMT+8")
+        return sdf.format(Date())
+    }
+
+val version = "1.$releaseTime"
+
+val gitCommits: Int
+    get() {
+        val process = ProcessBuilder("git", "rev-list", "HEAD", "--count").start()
+        return process.inputStream.reader().use { it.readText() }.trim().toInt()
+    }
 android {
     namespace = "com.k2fsa.sherpa.onnx.tts.engine"
     compileSdk = 34
@@ -13,8 +37,8 @@ android {
         applicationId = "com.k2fsa.sherpa.onnx.tts.engine"
         minSdk = 21
         targetSdk = 34
-        versionCode = 1
-        versionName = "1.0"
+        versionCode = gitCommits
+        versionName = version
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
@@ -30,8 +54,15 @@ android {
                 "proguard-rules.pro"
             )
         }
+
+        debug {
+            applicationIdSuffix = ".debug"
+            versionNameSuffix = "_debug"
+        }
     }
     compileOptions {
+        isCoreLibraryDesugaringEnabled = true
+
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
     }
@@ -52,8 +83,12 @@ android {
 }
 
 dependencies {
+    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.0.4")
+
+
     implementation("com.charleskorn.kaml:kaml:0.57.0")
     implementation("com.github.FunnySaltyFish.ComposeDataSaver:data-saver:v1.1.5")
+    implementation("org.meeuw.i18n:i18n-iso-639-3:3.0")
 
     val composeBom = platform("androidx.compose:compose-bom:2024.02.01")
     implementation("androidx.core:core-ktx:1.12.0")

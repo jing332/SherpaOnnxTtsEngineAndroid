@@ -7,15 +7,9 @@ import com.k2fsa.sherpa.onnx.OfflineTtsModelConfig
 import com.k2fsa.sherpa.onnx.OfflineTtsVitsModelConfig
 import com.k2fsa.sherpa.onnx.tts.engine.synthesizer.config.ConfigManager
 import com.k2fsa.sherpa.onnx.tts.engine.synthesizer.config.Model
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.update
-import kotlinx.coroutines.runBlocking
 import java.io.File
 
 object ModelManager {
@@ -30,12 +24,33 @@ object ModelManager {
         get() = _modelsFlow.asStateFlow()
 
     private fun notifyModelsChange() {
+        Log.d(TAG, "notifyModelsChange: ${models.size}")
         _modelsFlow.value = models.toList()
     }
 
+    @Synchronized
     fun load() {
         models.addAll(ConfigManager.config.models)
+        deduplicateModels()
+
         notifyModelsChange()
+    }
+
+    fun languages(): List<String> {
+        return models.distinctBy { it.lang }.map { it.lang }
+    }
+
+    fun defaultLanguage(): String {
+        return models.firstOrNull()?.lang ?: "en"
+    }
+
+    // 去重models
+    private fun deduplicateModels() {
+        val list = models.distinctBy { it.id }
+        Log.d(TAG, "deduplicateModels: ${list.size}")
+        models.clear()
+        models.addAll(list)
+        ConfigManager.updateConfig(ConfigManager.config.copy(models = models))
     }
 
     fun removeModel(model: Model) {

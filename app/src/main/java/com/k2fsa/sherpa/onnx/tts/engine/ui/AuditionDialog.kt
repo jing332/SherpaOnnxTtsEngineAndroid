@@ -22,7 +22,7 @@ import com.k2fsa.sherpa.onnx.OfflineTtsConfig
 import com.k2fsa.sherpa.onnx.tts.engine.conf.AppConfig
 import com.k2fsa.sherpa.onnx.tts.engine.R
 import com.k2fsa.sherpa.onnx.tts.engine.synthesizer.SynthesizerManager
-import com.k2fsa.sherpa.onnx.tts.engine.util.PcmAudioPlayer
+import com.k2fsa.sherpa.onnx.tts.engine.utils.PcmAudioPlayer
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext

@@ -9,4 +9,8 @@
     <string name="language">Language</string>
     <string name="display_name">Display name</string>
     <string name="onnx_model_file">Onnx model file</string>
+    <string name="search">Search</string>
+    <string name="loading">Loading</string>
+    <string name="copied">Copied</string>
+    <string name="tts_config_not_set">TTS Config not set</string>
 </resources>
