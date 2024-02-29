@@ -7,7 +7,6 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
-import android.net.Uri
 import android.os.Binder
 import android.os.Build
 import android.os.IBinder
@@ -37,6 +36,7 @@ import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
 import org.apache.commons.io.FileUtils
 import java.io.File
+import java.io.InputStream
 import java.util.UUID
 
 class ImportModelPackageService : Service() {
@@ -181,15 +181,18 @@ class ImportModelPackageService : Service() {
                     DocumentFile.fromSingleUri(this, uri)!!.let {
                         mFilename = it.name!!
                     }
+
                 }
 
                 else -> {
-                    mFilename = File(uri.path!!).name
+                    val f = File(uri.toString())
+                    mFilename = f.name
                 }
             }
 
             mScope.launch {
-                if (execute(uri))
+                val ins = contentResolver.openInputStream(uri)
+                if (execute(ins))
                     sendNotification(
                         channelId = NotificationConst.IMPORT_MODEL_PACKAGE_CHANNEL_ID,
                         title = getString(R.string.import_completed),
@@ -204,8 +207,7 @@ class ImportModelPackageService : Service() {
     }
 
 
-    private suspend fun execute(uri: Uri): Boolean {
-        val ins = contentResolver.openInputStream(uri)
+    private suspend fun execute(ins: InputStream?): Boolean {
         if (ins == null) {
             stopSelf()
         } else {

@@ -17,7 +17,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.documentfile.provider.DocumentFile
 import com.k2fsa.sherpa.onnx.tts.engine.R
 import com.k2fsa.sherpa.onnx.tts.engine.service.ImportModelPackageService
-import com.k2fsa.sherpa.onnx.tts.engine.ui.NotificationPermissionChecker
 import com.k2fsa.sherpa.onnx.tts.engine.utils.grantReadPermission
 import com.k2fsa.sherpa.onnx.tts.engine.utils.longToast
 
@@ -28,7 +27,7 @@ fun ImportModelPackageDialog(onDismissRequest: () -> Unit) {
     if (showTipsDialog)
         AlertDialog(onDismissRequest = onDismissRequest,
             title = { Text(stringResource(id = R.string.import_model_package)) },
-            text = { Text(stringResource(R.string.decompression_task_added_tips)) },
+            text = { Text(stringResource(R.string.task_added_tips)) },
             confirmButton = {
                 TextButton(onClick = onDismissRequest) {
                     Text(stringResource(id = android.R.string.ok))
