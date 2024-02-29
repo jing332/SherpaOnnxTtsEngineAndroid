@@ -61,7 +61,7 @@ class MainActivity : ComponentActivity() {
                     }
                 }
             }
-
+            NotificationPermissionChecker()
             SherpaOnnxTtsEngineTheme {
                 val navController = rememberNavController()
                 navController.enableOnBackPressed(false)

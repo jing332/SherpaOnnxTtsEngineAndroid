@@ -93,8 +93,12 @@ android {
 }
 
 dependencies {
-    implementation("androidx.navigation:navigation-compose:2.7.7")
     coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.0.4")
+
+    implementation("androidx.navigation:navigation-compose:2.7.7")
+    implementation("androidx.documentfile:documentfile:1.0.1")
+
+    implementation("org.apache.commons:commons-compress:1.26.0")
 
     implementation("com.geyifeng.immersionbar:immersionbar:3.2.2")
     implementation("com.geyifeng.immersionbar:immersionbar-ktx:3.2.2")
@@ -106,9 +110,11 @@ dependencies {
     val accompanistVersion = "0.33.0-alpha"
     implementation("com.google.accompanist:accompanist-systemuicontroller:${accompanistVersion}")
     implementation("com.google.accompanist:accompanist-navigation-animation:${accompanistVersion}")
+    implementation("com.google.accompanist:accompanist-permissions:${accompanistVersion}")
+
 
     implementation("androidx.constraintlayout:constraintlayout-compose:1.0.1")
-    implementation("androidx.navigation:navigation-compose:2.7.6")
+    implementation("androidx.navigation:navigation-compose:2.7.7")
 
     implementation("io.github.dokar3:sheets-m3:0.5.4")
 

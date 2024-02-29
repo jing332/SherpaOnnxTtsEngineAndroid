@@ -28,13 +28,13 @@ import com.k2fsa.sherpa.onnx.tts.engine.synthesizer.ModelManager
 import com.k2fsa.sherpa.onnx.tts.engine.synthesizer.config.Model
 
 @Composable
-fun ImportModelsDialog(onDismissRequest: () -> Unit) {
+fun AddModelsDialog(onDismissRequest: () -> Unit) {
     val context = androidx.compose.ui.platform.LocalContext.current
     val models = remember { ModelManager.getNotAddedModels(context) }
     val checkedModels = remember { mutableStateListOf<Model>() }
     AlertDialog(onDismissRequest = onDismissRequest, title = {
         Column {
-            Text(text = stringResource(id = R.string.import_models))
+            Text(text = stringResource(id = R.string.add_models))
             SelectionContainer {
                 Text(text = ModelConstants.modelPath, style = MaterialTheme.typography.bodySmall)
             }

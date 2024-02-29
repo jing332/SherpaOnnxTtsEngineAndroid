@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AddToPhotos
+import androidx.compose.material.icons.filled.Archive
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Deselect
 import androidx.compose.material.icons.filled.MoreVert
@@ -128,7 +129,7 @@ private fun SelectionToolBar(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun MainToolBar(modifier: Modifier, onAdd: () -> Unit) {
+private fun MainToolBar(modifier: Modifier, onAddModels: () -> Unit, onImportModels: () -> Unit) {
     val context = LocalContext.current
     TopAppBar(
         modifier = modifier,
@@ -140,32 +141,42 @@ private fun MainToolBar(modifier: Modifier, onAdd: () -> Unit) {
                 Icon(Icons.Default.TextFields, stringResource(R.string.sample_text))
             }
 
-            IconButton(onClick = onAdd) {
-                Icon(
-                    Icons.Default.AddToPhotos,
-                    stringResource(R.string.import_models)
-                )
+            var showOptions by remember { mutableStateOf(false) }
+            IconButton(onClick = { showOptions = true }) {
+                Icon(Icons.Default.MoreVert, stringResource(id = R.string.more_options))
+                DropdownMenu(expanded = showOptions, onDismissRequest = { showOptions = false }) {
+                    DropdownMenuItem(
+                        text = { Text(stringResource(R.string.add_models)) },
+                        onClick = onAddModels,
+                        leadingIcon = {
+                            Icon(Icons.Default.AddToPhotos, null)
+                        }
+                    )
+
+                    DropdownMenuItem(
+                        text = { Text(stringResource(R.string.import_model_package)) },
+                        onClick = onImportModels,
+                        leadingIcon = {
+                            Icon(Icons.Default.Archive, null)
+                        }
+                    )
+                }
             }
+
         }
     )
 }
 
-object ToolBarSelectionAction {
-    const val ADD = "add"
-    const val SELECT_ALL = "select_all"
-    const val SELECT_INVERT = "select_invert"
-    const val SET_LANGUAGE = "set_language"
-}
 
 @Composable
 fun ModelManagerToolbar(
     state: ToolBarState,
-    onAdd: () -> Unit,
+    onAddModels: () -> Unit,
+    onImportModels: () -> Unit,
     onSetLanguages: (language: String) -> Unit,
     onSelectAll: () -> Unit,
     onSelectInvert: () -> Unit,
     onCancelSelect: () -> Unit
-
 ) {
     Crossfade(targetState = state.selectedCount.value > 0, label = "") { selectMode ->
         if (selectMode) {
@@ -178,7 +189,11 @@ fun ModelManagerToolbar(
                 onSetLanguages = onSetLanguages
             )
         } else {
-            MainToolBar(modifier = Modifier, onAdd = onAdd)
+            MainToolBar(
+                modifier = Modifier,
+                onAddModels = onAddModels,
+                onImportModels = onImportModels
+            )
         }
 
     }
