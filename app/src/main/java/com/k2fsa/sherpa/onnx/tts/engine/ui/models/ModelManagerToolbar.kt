@@ -9,6 +9,7 @@ import androidx.compose.material.icons.filled.AddToPhotos
 import androidx.compose.material.icons.filled.Archive
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Deselect
+import androidx.compose.material.icons.filled.Download
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.SelectAll
 import androidx.compose.material.icons.filled.TextFields
@@ -129,7 +130,12 @@ private fun SelectionToolBar(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun MainToolBar(modifier: Modifier, onAddModels: () -> Unit, onImportModels: () -> Unit) {
+private fun MainToolBar(
+    modifier: Modifier,
+    onAddModels: () -> Unit,
+    onImportModels: () -> Unit,
+    onDownloadModels: () -> Unit
+) {
     val context = LocalContext.current
     TopAppBar(
         modifier = modifier,
@@ -160,6 +166,14 @@ private fun MainToolBar(modifier: Modifier, onAddModels: () -> Unit, onImportMod
                             Icon(Icons.Default.Archive, null)
                         }
                     )
+
+                    DropdownMenuItem(
+                        text = { Text(stringResource(R.string.download_model)) },
+                        onClick = onDownloadModels,
+                        leadingIcon = {
+                            Icon(Icons.Default.Download, null)
+                        }
+                    )
                 }
             }
 
@@ -173,6 +187,8 @@ fun ModelManagerToolbar(
     state: ToolBarState,
     onAddModels: () -> Unit,
     onImportModels: () -> Unit,
+    onDownloadModels: () -> Unit,
+
     onSetLanguages: (language: String) -> Unit,
     onSelectAll: () -> Unit,
     onSelectInvert: () -> Unit,
@@ -192,7 +208,8 @@ fun ModelManagerToolbar(
             MainToolBar(
                 modifier = Modifier,
                 onAddModels = onAddModels,
-                onImportModels = onImportModels
+                onImportModels = onImportModels,
+                onDownloadModels = onDownloadModels
             )
         }
 

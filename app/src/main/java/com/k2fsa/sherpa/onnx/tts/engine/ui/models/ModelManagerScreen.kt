@@ -77,6 +77,10 @@ fun ModelManagerScreen() {
     if (showImportPackageDialog)
         ImportModelPackageDialog { showImportPackageDialog = false }
 
+    var showDlModelDialog by remember { mutableStateOf(false) }
+    if (showDlModelDialog)
+        ModelDownloadDialog { showDlModelDialog = false }
+
     val vm: ModelManagerViewModel = viewModel()
     val toolBarState = remember {
         ToolBarState()
@@ -86,6 +90,8 @@ fun ModelManagerScreen() {
             state = toolBarState,
             onAddModels = { showImportDialog = true },
             onImportModels = { showImportPackageDialog = true },
+            onDownloadModels = { showDlModelDialog = true },
+
             onSetLanguages = { vm.setLanguagesForSelectedModels(it) },
             onSelectAll = { vm.selectAll() },
             onSelectInvert = { vm.selectInvert() },
