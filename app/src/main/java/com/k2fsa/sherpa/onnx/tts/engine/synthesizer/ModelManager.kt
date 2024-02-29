@@ -17,7 +17,7 @@ object ModelManager {
 
     private val models = mutableListOf<Model>()
 
-    fun models() = models
+    fun models(): List<Model> = models
 
     private val _modelsFlow by lazy { MutableStateFlow<List<Model>>(emptyList()) }
     val modelsFlow: StateFlow<List<Model>>

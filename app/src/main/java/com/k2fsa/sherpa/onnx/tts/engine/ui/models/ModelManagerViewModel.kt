@@ -1,6 +1,6 @@
 package com.k2fsa.sherpa.onnx.tts.engine.ui.models
 
-import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.mutableStateListOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.k2fsa.sherpa.onnx.tts.engine.synthesizer.ModelManager
@@ -9,14 +9,16 @@ import kotlinx.coroutines.launch
 import java.util.Collections
 
 class ModelManagerViewModel : ViewModel() {
-    val models = mutableStateOf<List<Model>>(emptyList())
+    internal val models = mutableStateListOf<Model>()
+    internal val selectedModels = mutableStateListOf<Model>()
 
     fun load() {
         viewModelScope.launch {
             ModelManager.load()
             ModelManager.modelsFlow.collect {
                 println("collect: ${it.hashCode()}")
-                models.value = it
+                models.clear()
+                models.addAll(it)
             }
         }
     }
@@ -29,5 +31,27 @@ class ModelManagerViewModel : ViewModel() {
 
     fun deleteModel(model: Model) {
         ModelManager.removeModel(model)
+    }
+
+    fun setLanguagesForSelectedModels(lang: String) {
+        val list = ModelManager.models().toMutableList()
+        list.forEachIndexed { index, model ->
+            if (selectedModels.find { it.id == model.id } != null) {
+                list[index] = model.copy(lang = lang)
+            }
+        }
+        ModelManager.updateModels(list)
+    }
+
+    fun selectAll() {
+        selectedModels.clear()
+        selectedModels.addAll(models)
+    }
+
+    fun selectInvert() {
+        ModelManager.models().filter { !selectedModels.contains(it) }.let {
+            selectedModels.clear()
+            selectedModels.addAll(it)
+        }
     }
 }

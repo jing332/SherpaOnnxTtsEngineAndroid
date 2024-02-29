@@ -28,4 +28,9 @@
     <string name="is_confirm_delete">Do you want to delete it?</string>
     <string name="more_options">More options</string>
     <string name="delete_model_from_config_desc">This will only be removed from the configuration file and will not delete the model file.</string>
+    <string name="cancel_select">Cancel select</string>
+    <string name="enabled">Enabled</string>
+    <string name="disabled">Disabled</string>
+    <string name="change_language">Change language</string>
+    <string name="invert_select">Invert select</string>
 </resources>
