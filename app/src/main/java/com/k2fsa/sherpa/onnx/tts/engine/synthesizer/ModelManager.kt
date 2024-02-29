@@ -45,6 +45,7 @@ object ModelManager {
     }
 
     // 去重models
+    @Synchronized
     private fun deduplicateModels() {
         val list = models.distinctBy { it.id }
         Log.d(TAG, "deduplicateModels: ${list.size}")
@@ -53,12 +54,14 @@ object ModelManager {
         ConfigManager.updateConfig(ConfigManager.config.copy(models = models))
     }
 
+    @Synchronized
     fun removeModel(model: Model) {
         models.remove(model)
         ConfigManager.updateConfig(ConfigManager.config.copy(models = models))
         notifyModelsChange()
     }
 
+    @Synchronized
     fun addModel(vararg model: Model) {
         models.addAll(model)
         ConfigManager.updateConfig(ConfigManager.config.copy(models = models))
@@ -72,7 +75,7 @@ object ModelManager {
             notifyModelsChange()
         }
     }
-
+    @Synchronized
     fun updateModels(model: List<Model>) {
         models.clear()
         models.addAll(model)
@@ -85,32 +88,34 @@ object ModelManager {
         return analyzeToModels().filter { it.id !in addedIds }
     }
 
+    fun analyzeToModel(dir: File): Model? {
+        Log.d(TAG, "load model: ${dir.name}")
+        val onnx = dir.listFiles { _, name -> name.endsWith(".onnx") }
+            ?.run { if (isNotEmpty()) first() else null }
+            ?: return null
+
+        val dataDir = dir.resolve("espeak-ng-data").takeIf { it.exists() }
+
+        return Model(
+            id = dir.name,
+            onnx = dir.name + "/" + onnx.name,
+            lexicon = if (dataDir == null) "${dir.name}/lexicon.txt" else "",
+            ruleFsts = if (dataDir == null) "${dir.name}/rule.fst" else "",
+            tokens = "${dir.name}/tokens.txt",
+            dataDir = dataDir?.run { "${dir.name}/espeak-ng-data" } ?: "",
+            lang = "en"
+        )
+    }
+
     // 根据文件目录结构获取模型列表
     fun analyzeToModels(): List<Model> {
         Log.d(TAG, "modelPath: ${ModelConstants.modelPath}")
         val list = mutableListOf<Model>()
         File(ModelConstants.modelPath).listFiles()!!.forEach { dir ->
-            if (dir.isDirectory) {
-                Log.d(TAG, "load model: ${dir.name}")
-                val onnx = dir.listFiles { _, name -> name.endsWith(".onnx") }
-                    ?.run { if (isNotEmpty()) first() else null }
-                    ?: return@forEach
-
-                val dataDir = dir.resolve("espeak-ng-data").takeIf { it.exists() }
-
-                list.add(
-                    Model(
-                        id = dir.name,
-                        onnx = dir.name + "/" + onnx.name,
-                        lexicon = if (dataDir == null) "${dir.name}/lexicon.txt" else "",
-                        ruleFsts = if (dataDir == null) "${dir.name}/rule.fst" else "",
-                        tokens = "${dir.name}/tokens.txt",
-                        dataDir = dataDir?.run { "${dir.name}/espeak-ng-data" } ?: "",
-                        lang = "en"
-                    )
-                )
-
-            }
+            if (dir.isDirectory)
+                analyzeToModel(dir)?.let {
+                    list.add(it)
+                }
         }
 
         return list

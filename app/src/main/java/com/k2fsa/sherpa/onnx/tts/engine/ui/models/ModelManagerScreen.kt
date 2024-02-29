@@ -25,6 +25,7 @@ import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -41,6 +42,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.onLongClick
+import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.text.font.FontWeight
@@ -67,9 +70,12 @@ import org.burnoutcrew.reorderable.reorderable
 fun ModelManagerScreen() {
     var showImportDialog by remember { mutableStateOf(false) }
     if (showImportDialog)
-        ImportModelsDialog { showImportDialog = false }
+        AddModelsDialog { showImportDialog = false }
     val context = LocalContext.current
 
+    var showImportPackageDialog by remember { mutableStateOf(false) }
+    if (showImportPackageDialog)
+        ImportModelPackageDialog { showImportPackageDialog = false }
 
     val vm: ModelManagerViewModel = viewModel()
     val toolBarState = remember {
@@ -78,11 +84,12 @@ fun ModelManagerScreen() {
     Scaffold(topBar = {
         ModelManagerToolbar(
             state = toolBarState,
-            onAdd = { showImportDialog = true },
+            onAddModels = { showImportDialog = true },
+            onImportModels = { showImportPackageDialog = true },
             onSetLanguages = { vm.setLanguagesForSelectedModels(it) },
             onSelectAll = { vm.selectAll() },
             onSelectInvert = { vm.selectInvert() },
-            onCancelSelect = { vm.selectedModels.clear() }
+            onCancelSelect = { vm.selectedModels.clear() },
         )
     }) {
         ModelManagerScreenContent(
@@ -135,8 +142,16 @@ fun ModelManagerScreenContent(
         if (toolBarState.selectedCount.value == 0) vm.selectedModels.clear()
     }
 
+    val view = LocalView.current
     val reorderState = rememberReorderableLazyListState(onMove = { from, to ->
         vm.moveModel(from.index, to.index)
+        view.announceForAccessibility(
+            context.getString(
+                R.string.list_moved_desc,
+                from.index.toString(),
+                to.index.toString()
+            )
+        )
     })
 
     LazyColumn(modifier = modifier.reorderable(reorderState), state = reorderState.listState) {
@@ -216,6 +231,8 @@ private fun ModelItem(
 
     val color =
         if (enabled) MaterialTheme.colorScheme.primary else Color.Unspecified
+    val tint =
+        if (enabled) MaterialTheme.colorScheme.primary else LocalContentColor.current
 
     Card(
         modifier = modifier
@@ -228,8 +245,7 @@ private fun ModelItem(
                 },
             )
             .semantics {
-                this.stateDescription = if (enabled) context.getString(R.string.enabled)
-                else context.getString(R.string.disabled)
+                this.selected = selected
             },
         colors = if (selected) CardDefaults.elevatedCardColors(
             containerColor = MaterialTheme.colorScheme.primaryContainer.copy(
@@ -245,12 +261,15 @@ private fun ModelItem(
                     modifier = Modifier
                         .align(Alignment.CenterVertically)
                         .background(
-                            if (enabled) color else Color.Unspecified,
+                            color = color,
                             shape = MaterialTheme.shapes.small
                         )
                         .width(4.dp)
                         .height(32.dp)
-
+                        .semantics {
+                            this.stateDescription = if (enabled) context.getString(R.string.enabled)
+                            else ""
+                        }
                 )
                 Row(
                     modifier = Modifier.weight(1f),
@@ -278,17 +297,19 @@ private fun ModelItem(
                             Icon(
                                 Icons.Default.Headset,
                                 contentDescription = stringResource(id = R.string.audition),
-                                tint = color
+                                tint = tint
                             )
                         }
 
                         var showOptions by remember { mutableStateOf(false) }
-                        IconButton(modifier = reorderModifier,
+                        IconButton(modifier = reorderModifier.semantics {
+                            onLongClick(context.getString(R.string.drag_sort_desc)) { true }
+                        },
                             onClick = { showOptions = true }) {
                             Icon(
                                 Icons.Default.MoreVert,
                                 contentDescription = stringResource(id = R.string.more_options),
-                                tint = color
+                                tint = tint
                             )
 
                             DropdownMenu(

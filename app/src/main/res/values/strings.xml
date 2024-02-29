@@ -2,8 +2,7 @@
     <string name="app_name">Next-gen Kaldi: TTS</string>
     <string name="audition">Audition</string>
     <string name="sample_text">Sample text</string>
-    <string name="sample_text1">这是语音合成示例。</string>
-    <string name="import_models">Import models</string>
+    <string name="import_model_package">Import model package</string>
     <string name="list_is_empty">List is empty.</string>
     <string name="edit">Edit</string>
     <string name="language">Language</string>
@@ -33,4 +32,18 @@
     <string name="disabled">Disabled</string>
     <string name="change_language">Change language</string>
     <string name="invert_select">Invert select</string>
+    <string name="no_file_selected">No file selected</string>
+    <string name="compress_service">Compress service</string>
+    <string name="decompressing">Decompressing</string>
+    <string name="decompressing_finished">Decompressing finished</string>
+    <string name="add_models">Add models</string>
+    <string name="only_tar_bz2_files_are_supported">❌ Only .tar.bz2 files are supported</string>
+    <string name="unable_get_file_name">❌ Unable get file name</string>
+    <string name="unable_grant_read_permission">❌ Unable to grant read permission</string>
+    <string name="decompression_task_added_tips">The decompression task has been added, please check the progress from the system notification.</string>
+    <string name="copying">Copying</string>
+    <string name="import_completed">Import completed</string>
+    <string name="drag_sort_desc">Drag to sort</string>
+    <string name="list_moved_desc">From %1$s to %2$s</string>
+    <string name="notification_goto_settings_enable">Notification permission is denied, please goto settings and enable it.</string>
 </resources>

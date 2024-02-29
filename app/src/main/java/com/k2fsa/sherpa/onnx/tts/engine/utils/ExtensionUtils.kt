@@ -62,7 +62,6 @@ import androidx.navigation.NavDestination
 import androidx.navigation.NavHostController
 import androidx.navigation.NavOptions
 import androidx.navigation.Navigator
-import java.util.Locale
 
 
 @SuppressLint("RestrictedApi")
@@ -263,6 +262,13 @@ fun View.performLongPress() {
 
 fun Context.startActivity(clz: Class<*>) {
     startActivity(Intent(this, clz).apply { action = Intent.ACTION_VIEW })
+}
+
+fun Uri.grantReadPermission(contentResolver: ContentResolver) {
+    contentResolver.takePersistableUriPermission(
+        this,
+        Intent.FLAG_GRANT_READ_URI_PERMISSION
+    )
 }
 
 fun Uri.grantReadWritePermission(contentResolver: ContentResolver) {

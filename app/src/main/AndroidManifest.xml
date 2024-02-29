@@ -3,6 +3,9 @@
     xmlns:tools="http://schemas.android.com/tools"
     package="com.k2fsa.sherpa.onnx.tts.engine">
 
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+
     <application
         android:name=".App"
         android:allowBackup="true"
@@ -14,11 +17,16 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.SherpaOnnxTtsEngine"
         tools:targetApi="31">
+        <service
+            android:name=".service.ImportModelPackageService"
+            android:enabled="true"
+            android:exported="false" />
+
         <activity
             android:name=".ui.sampletext.SampleTextManagerActivity"
             android:exported="true"
+            android:launchMode="singleInstance"
             android:label="@string/sample_text" />
-
         <activity
             android:name=".service.GetSampleText"
             android:exported="true"
@@ -52,7 +60,8 @@
             android:name=".service.TtsService"
             android:enabled="true"
             android:exported="true"
-            android:label="@string/app_name">
+            android:label="@string/app_name"
+            tools:ignore="ExportedService">
             <intent-filter>
                 <action android:name="android.intent.action.TTS_SERVICE" />
 
@@ -67,7 +76,6 @@
         <activity
             android:name=".ui.MainActivity"
             android:exported="true"
-            android:label="@string/app_name"
             android:theme="@style/Theme.SherpaOnnxTtsEngine">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
