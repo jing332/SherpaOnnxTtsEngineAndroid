@@ -6,7 +6,7 @@
 3. Open Application -> Add models
 
 > [!NOTE]
-> On Android 13+ devices, use [MT Manager](https://mt2.cn/download/) or [Material Files](https://github.com/zhanghai/MaterialFiles) to access the Android/data path".
+> On Android 13+ devices, use [MT Manager](https://mt2.cn/download/) or [Material Files](https://github.com/zhanghai/MaterialFiles) or [MiXplorer](https://xdaforums.com/t/app-2-2-mixplorer-v6-x-released-fully-featured-file-manager.1523691/) to access the Android/data path".
 
 # Preview
 <img src="./images/1.jpg" height="150px" alt="1">
