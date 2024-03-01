@@ -5,7 +5,7 @@
 
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
-    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC" />
     <uses-permission android:name="android.permission.INTERNET" />
 
     <application
@@ -20,15 +20,10 @@
         android:theme="@style/Theme.SherpaOnnxTtsEngine"
         tools:targetApi="31">
         <service
-            android:name=".service.DownloadModelService"
+            android:name=".service.ModelPackageInstallService"
             android:enabled="true"
             android:exported="false"
-            android:foregroundServiceType="mediaPlayback" />
-        <service
-            android:name=".service.ImportModelPackageService"
-            android:enabled="true"
-            android:exported="false"
-            android:foregroundServiceType="mediaPlayback" />
+            android:foregroundServiceType="dataSync" />
 
         <activity
             android:name=".ui.sampletext.SampleTextManagerActivity"

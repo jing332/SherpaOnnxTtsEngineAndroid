@@ -79,7 +79,7 @@ fun ModelManagerScreen() {
 
     var showDlModelDialog by remember { mutableStateOf(false) }
     if (showDlModelDialog)
-        ModelDownloadDialog { showDlModelDialog = false }
+        ModelDownloadInstallDialog { showDlModelDialog = false }
 
     val vm: ModelManagerViewModel = viewModel()
     val toolBarState = remember {

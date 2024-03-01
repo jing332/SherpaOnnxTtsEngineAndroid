@@ -125,6 +125,8 @@ fun NavHostController.navigateSingleTop(
         navController.navigate(route, args, navOptions)
 }
 
+fun Long.formatFileSize(context: Context): String =
+    android.text.format.Formatter.formatFileSize(context, this)
 
 fun FloatArray.toByteArray(): ByteArray {
     // byteArray is actually a ShortArray
@@ -145,7 +147,7 @@ fun Service.startForegroundCompat(
         startForeground(
             notificationId,
             notification,
-            ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PLAYBACK
+            ServiceInfo.FOREGROUND_SERVICE_TYPE_DATA_SYNC
         )
     } else {
         startForeground(notificationId, notification)

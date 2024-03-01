@@ -16,7 +16,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.documentfile.provider.DocumentFile
 import com.k2fsa.sherpa.onnx.tts.engine.R
-import com.k2fsa.sherpa.onnx.tts.engine.service.ImportModelPackageService
+import com.k2fsa.sherpa.onnx.tts.engine.service.ModelPackageInstallService
 import com.k2fsa.sherpa.onnx.tts.engine.utils.grantReadPermission
 import com.k2fsa.sherpa.onnx.tts.engine.utils.longToast
 
@@ -67,7 +67,7 @@ fun ImportModelPackageDialog(onDismissRequest: () -> Unit) {
 
             showTipsDialog = true
 
-            context.startService(Intent(context, ImportModelPackageService::class.java).apply {
+            context.startService(Intent(context, ModelPackageInstallService::class.java).apply {
                 data = uri
             })
         }
