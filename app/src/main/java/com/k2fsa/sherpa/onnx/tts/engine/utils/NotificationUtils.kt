@@ -5,10 +5,12 @@ import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.Context
+import android.content.Intent
 import android.os.Build
 import androidx.annotation.RequiresApi
 import com.k2fsa.sherpa.onnx.tts.engine.R
 import com.k2fsa.sherpa.onnx.tts.engine.app
+import com.k2fsa.sherpa.onnx.tts.engine.ui.MainActivity
 import java.util.concurrent.atomic.AtomicLong
 
 
@@ -35,11 +37,11 @@ object NotificationUtils {
 
     @RequiresApi(Build.VERSION_CODES.O)
     fun createChannel(
-        id: String, name: String, importance: Int = NotificationManager.IMPORTANCE_DEFAULT
+        id: String, name: String, importance: Int = NotificationManager.IMPORTANCE_HIGH
     ) {
         val chan = NotificationChannel(id, name, importance)
         chan.lightColor = android.graphics.Color.CYAN
-        chan.lockscreenVisibility = Notification.VISIBILITY_PRIVATE
+        chan.lockscreenVisibility = Notification.VISIBILITY_PUBLIC
         notificationManager.createNotificationChannel(chan)
     }
 
@@ -56,6 +58,14 @@ object NotificationUtils {
                 setContentText(content)
                 setSmallIcon(R.mipmap.ic_launcher)
                 setAutoCancel(true)
+                setContentIntent(
+                    PendingIntent.getActivity(
+                        this@sendNotification,
+                        0,
+                        Intent(this@sendNotification, MainActivity::class.java),
+                        pendingIntentFlags
+                    )
+                )
             }.build()
         )
     }

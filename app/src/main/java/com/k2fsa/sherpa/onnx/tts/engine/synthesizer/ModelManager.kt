@@ -5,6 +5,7 @@ import android.util.Log
 import com.k2fsa.sherpa.onnx.OfflineTtsConfig
 import com.k2fsa.sherpa.onnx.OfflineTtsModelConfig
 import com.k2fsa.sherpa.onnx.OfflineTtsVitsModelConfig
+import com.k2fsa.sherpa.onnx.tts.engine.FileConst
 import com.k2fsa.sherpa.onnx.tts.engine.synthesizer.config.ConfigManager
 import com.k2fsa.sherpa.onnx.tts.engine.synthesizer.config.Model
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -103,15 +104,15 @@ object ModelManager {
             ruleFsts = if (dataDir == null) "${dir.name}/rule.fst" else "",
             tokens = "${dir.name}/tokens.txt",
             dataDir = dataDir?.run { "${dir.name}/espeak-ng-data" } ?: "",
-            lang = "en"
+            lang = "en-US"
         )
     }
 
     // 根据文件目录结构获取模型列表
     fun analyzeToModels(): List<Model> {
-        Log.d(TAG, "modelPath: ${ModelConstants.modelPath}")
+        Log.d(TAG, "modelPath: ${FileConst.modelDir}")
         val list = mutableListOf<Model>()
-        File(ModelConstants.modelPath).listFiles()!!.forEach { dir ->
+        File(FileConst.modelDir).listFiles()!!.forEach { dir ->
             if (dir.isDirectory)
                 analyzeToModel(dir)?.let {
                     list.add(it)
@@ -121,7 +122,7 @@ object ModelManager {
         return list
     }
 
-    fun Model.toOfflineTtsConfig(root: String = ModelConstants.modelPath): OfflineTtsConfig {
+    fun Model.toOfflineTtsConfig(root: String = FileConst.modelDir): OfflineTtsConfig {
         fun format(str: String): String {
             return if (str.isBlank()) "" else "$root/$str"
         }

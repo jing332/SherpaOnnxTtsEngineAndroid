@@ -2,14 +2,14 @@ package com.k2fsa.sherpa.onnx.tts.engine.synthesizer.config
 
 import com.charleskorn.kaml.decodeFromStream
 import com.k2fsa.sherpa.onnx.tts.engine.AppConst
-import com.k2fsa.sherpa.onnx.tts.engine.synthesizer.ModelConstants
+import com.k2fsa.sherpa.onnx.tts.engine.FileConst
 import kotlinx.serialization.encodeToString
 import java.io.InputStream
 
 typealias SampleTextMap = Map<String, List<String>>
 
 object SampleTextConfig :
-    ImplYamlConfig<SampleTextMap>(ModelConstants.sampleTextPath, { mapOf() }) {
+    ImplYamlConfig<SampleTextMap>(FileConst.sampleTextPath, { mapOf() }) {
     override fun decode(ins: InputStream): SampleTextMap {
         return AppConst.yaml.decodeFromStream(ins)
     }

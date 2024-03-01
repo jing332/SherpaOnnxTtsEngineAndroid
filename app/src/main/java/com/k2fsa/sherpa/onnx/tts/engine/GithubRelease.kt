@@ -47,8 +47,8 @@ data class GithubRelease(
     data class Asset(
         @SerialName("browser_download_url")
         val browserDownloadUrl: String = "", // https://github.com/jing332/frpandroid/releases/download/1.23.081611/AList-v1.23.081611.apk
-//            @SerialName("content_type")
-//            val contentType: String = "", // application/vnd.android.package-archive
+        @SerialName("content_type")
+        val contentType: String = "", // application/vnd.android.package-archive
 //            @SerialName("created_at")
 //            val createdAt: String = "", // 2023-08-16T03:29:37Z
 //            @SerialName("download_count")

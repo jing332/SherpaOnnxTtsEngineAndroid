@@ -2,7 +2,7 @@ package com.k2fsa.sherpa.onnx.tts.engine.synthesizer.config
 
 import com.charleskorn.kaml.decodeFromStream
 import com.k2fsa.sherpa.onnx.tts.engine.AppConst
-import com.k2fsa.sherpa.onnx.tts.engine.synthesizer.ModelConstants.configPath
+import com.k2fsa.sherpa.onnx.tts.engine.FileConst.configPath
 import kotlinx.serialization.encodeToString
 import java.io.InputStream
 

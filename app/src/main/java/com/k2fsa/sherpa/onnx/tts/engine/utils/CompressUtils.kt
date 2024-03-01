@@ -17,10 +17,13 @@ import kotlin.coroutines.coroutineContext
 object CompressUtils {
     const val TAG = "CompressUtils"
 
+    fun interface ProgressListener {
+        fun onEntryProgress(name: String, entrySize: Long, bytes: Long)
+    }
+
     private suspend fun ArchiveInputStream<*>.uncompress(
         outputDir: String,
-        onProgress: (name: String) -> Unit,
-        onEntryProgress: (name: String, entrySize: Long, bytes: Long) -> Unit
+        progressListener: ProgressListener
     ) {
         createFile(outputDir, "").mkdirs()
         var totalBytes = 0L
@@ -39,7 +42,6 @@ object CompressUtils {
                         withContext(Dispatchers.IO) { file.createNewFile() }
                     }
 
-                    onProgress(entry.name)
                     file.outputStream().use { out ->
                         val buffer = ByteArray(DEFAULT_BUFFER_SIZE)
                         var bytes = 0L
@@ -51,7 +53,7 @@ object CompressUtils {
 
                             out.write(buffer, 0, len)
                             bytes += len
-                            onEntryProgress(entry.name, entry.size, bytes)
+                            progressListener.onEntryProgress(entry.name, entry.size, bytes)
                         }
                     }
                 }
@@ -63,22 +65,20 @@ object CompressUtils {
     suspend fun uncompressTarBzip2(
         ins: InputStream,
         outputDir: String,
-        onProgress: (name: String) -> Unit,
-        onEntryProgress: (name: String, entrySize: Long, bytes: Long) -> Unit
+        progressListener: ProgressListener
     ) {
         TarArchiveInputStream(BZip2CompressorInputStream(ins)).use { tarIn ->
-            tarIn.uncompress(outputDir, onProgress, onEntryProgress)
+            tarIn.uncompress(outputDir, progressListener)
         }
     }
 
     suspend fun uncompressZip(
         ins: InputStream,
         outputDir: String,
-        onProgress: (name: String) -> Unit,
-        onEntryProgress: (name: String, entrySize: Long, bytes: Long) -> Unit
+        progressListener: ProgressListener
     ) {
         ZipArchiveInputStream(ins).use { zipIn ->
-            zipIn.uncompress(outputDir, onProgress, onEntryProgress)
+            zipIn.uncompress(outputDir, progressListener)
         }
     }
 

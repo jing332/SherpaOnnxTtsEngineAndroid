@@ -34,8 +34,8 @@
     <string name="invert_select">Invert select</string>
     <string name="no_file_selected">No file selected</string>
     <string name="compress_service">Compress service</string>
-    <string name="decompressing">Decompressing</string>
-    <string name="decompressing_finished">Decompressing finished</string>
+    <string name="unzipping">Decompressing</string>
+    <string name="unzipping_finished">Decompressing finished</string>
     <string name="add_models">Add models</string>
     <string name="only_tar_bz2_files_are_supported">❌ Only .tar.bz2 files are supported</string>
     <string name="unable_get_file_name">❌ Unable get file name</string>
@@ -48,4 +48,9 @@
     <string name="notification_goto_settings_enable">Notification permission is denied, please goto settings and enable it.</string>
     <string name="download_model">Download model</string>
     <string name="downloading">Downloading</string>
+    <string name="moving_files">Moving files</string>
+    <string name="model_package_installer">Model installer</string>
+    <string name="model_install_failed">Model installation failed ❌</string>
+    <string name="model_installed">Model installed</string>
+    <string name="timed_out">Timed out</string>
 </resources>

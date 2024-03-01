@@ -23,7 +23,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
 import com.k2fsa.sherpa.onnx.tts.engine.R
-import com.k2fsa.sherpa.onnx.tts.engine.synthesizer.ModelConstants
+import com.k2fsa.sherpa.onnx.tts.engine.FileConst
 import com.k2fsa.sherpa.onnx.tts.engine.synthesizer.ModelManager
 import com.k2fsa.sherpa.onnx.tts.engine.synthesizer.config.Model
 
@@ -36,7 +36,7 @@ fun AddModelsDialog(onDismissRequest: () -> Unit) {
         Column {
             Text(text = stringResource(id = R.string.add_models))
             SelectionContainer {
-                Text(text = ModelConstants.modelPath, style = MaterialTheme.typography.bodySmall)
+                Text(text = FileConst.modelDir, style = MaterialTheme.typography.bodySmall)
             }
         }
     }, text = {
