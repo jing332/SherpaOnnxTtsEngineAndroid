@@ -3,6 +3,8 @@ package com.k2fsa.sherpa.onnx.tts.engine.synthesizer
 import android.util.Log
 import com.k2fsa.sherpa.onnx.OfflineTts
 import com.k2fsa.sherpa.onnx.OfflineTtsConfig
+import com.k2fsa.sherpa.onnx.tts.engine.conf.TtsConfig
+import kotlin.math.max
 
 object SynthesizerManager {
     const val TAG = "SynthesizerManager"
@@ -15,9 +17,11 @@ object SynthesizerManager {
             Log.d(TAG, "getTTS (from cache): ${it.config}")
         }
 
-        return tts ?: OfflineTts(
-            config = cfg
-        ).run {
+        val model = cfg.model.copy(
+            numThreads = max(1, TtsConfig.threadNum.value)
+        )
+
+        return tts ?: OfflineTts(config = cfg.copy(model = model)).run {
             cacheTTS(cfg.model.vits.model, this)
             this
         }

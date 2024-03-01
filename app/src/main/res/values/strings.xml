@@ -19,7 +19,7 @@
     <string name="desc_seekbar_remove">Seekbar remove</string>
     <string name="desc_seekbar_add">Seekbar add</string>
     <string name="close">Close</string>
-    <string name="engine_cache">Engine cache</string>
+    <string name="engine">Engine</string>
     <string name="timeout_destruction">Timeout destruction</string>
     <string name="minute_format">%1$s min</string>
     <string name="timeout_destruction_summary">The model is automatically destroyed after it has not been used for a specified period of time to save running memory.</string>
@@ -53,4 +53,8 @@
     <string name="model_install_failed">Model installation failed ❌</string>
     <string name="model_installed">Model installed</string>
     <string name="timed_out">Timed out</string>
+    <string name="cache_size">Cache size</string>
+    <string name="cache_size_summary">Maximum number of engine caches</string>
+    <string name="thread_num">Number of threads</string>
+    <string name="thread_num_summary">Maximum number of threads per engine</string>
 </resources>

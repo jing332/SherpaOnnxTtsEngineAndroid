@@ -159,7 +159,7 @@ fun getOfflineTtsConfig(
                 model = "$modelDir/$modelName",
                 lexicon = "$modelDir/$lexicon",
                 tokens = "$modelDir/tokens.txt",
-                dataDir = "$dataDir"
+                dataDir = dataDir
             ),
             numThreads = 2,
             debug = true,

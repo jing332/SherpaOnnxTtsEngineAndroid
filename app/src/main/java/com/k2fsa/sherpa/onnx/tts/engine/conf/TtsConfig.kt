@@ -16,7 +16,19 @@ object TtsConfig {
     val timeoutDestruction = mutableDataSaverStateOf(
         dataSaverInterface = dataSaverPref,
         key = "timeoutDestruction",
-        initialValue = 0
+        initialValue = 3
+    )
+
+    val cacheSize = mutableDataSaverStateOf(
+        dataSaverInterface = dataSaverPref,
+        key = "cacheSize",
+        initialValue = 3
+    )
+
+    val threadNum = mutableDataSaverStateOf(
+        dataSaverInterface = dataSaverPref,
+        key = "threadNum",
+        initialValue = 2
     )
 
 }

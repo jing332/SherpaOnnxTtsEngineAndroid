@@ -1,3 +1,5 @@
 - automatic download and installation model
 - batch change language
 - model list reorder
+- engine cache size
+- number of threads per engine 

@@ -135,7 +135,6 @@ object ModelManager {
                     tokens = format(tokens),
                     dataDir = format(dataDir),
                 ),
-                numThreads = 2,
                 debug = true,
                 provider = "cpu",
             ),
