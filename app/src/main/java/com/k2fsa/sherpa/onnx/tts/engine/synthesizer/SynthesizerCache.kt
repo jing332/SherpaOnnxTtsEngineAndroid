@@ -6,6 +6,8 @@ import java.util.concurrent.DelayQueue
 import java.util.concurrent.Delayed
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
+import kotlin.math.max
+import kotlin.math.min
 
 
 interface ImplCache {
@@ -13,10 +15,13 @@ interface ImplCache {
 }
 
 
-class SynthesizerCache {
+internal class SynthesizerCache {
     companion object {
         private val delayTime: Int
-            get() = 1000 * 60 * TtsConfig.timeoutDestruction.value
+            get() = 1000 * 60 * min(1, TtsConfig.timeoutDestruction.value)
+
+        private val maxCacheSize: Int
+            get() = max(1, TtsConfig.cacheSize.value)
     }
 
     private val delayQueue = DelayQueue<DelayedDestroyTask>()
@@ -44,15 +49,31 @@ class SynthesizerCache {
         }
     }
 
+    private fun limitSize() {
+        if (queueMap.size > maxCacheSize) {
+            val oldestEntry =
+                queueMap.entries.minByOrNull { it.value.getDelay(TimeUnit.MILLISECONDS) }
+            oldestEntry?.let {
+                queueMap.remove(it.key)
+                delayQueue.remove(it.value)
+            }
+        }
+    }
+
+    @Synchronized
     fun cache(id: String, obj: ImplCache) {
-        val task =
-            DelayedDestroyTask(delayTime = delayTime, id, obj)
+        limitSize()
+
+        val task = DelayedDestroyTask(delayTime = delayTime, id, obj)
         delayQueue.add(task)
         queueMap[id] = task
         ensureTaskRunning()
     }
 
+    @Synchronized
     fun getById(id: String): ImplCache? {
+        limitSize()
+
         queueMap[id]?.let {
             if (it.getDelay(TimeUnit.MILLISECONDS) <= 1000 * 10) { // 小于10s便重置
                 it.reset()

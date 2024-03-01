@@ -17,19 +17,40 @@ fun SettingsScreen() {
     Scaffold { paddingValues ->
         Column(Modifier.padding(paddingValues)) {
             DividerPreference {
-                Text(stringResource(id = R.string.engine_cache))
+                Text(stringResource(id = R.string.engine))
             }
 
             var timeout by remember { TtsConfig.timeoutDestruction }
             val timeoutStr = stringResource(id = R.string.minute_format, timeout)
             SliderPreference(
                 valueRange = 1f..60f,
-                steps = 60,
                 title = { Text(stringResource(R.string.timeout_destruction)) },
                 subTitle = { Text(stringResource(R.string.timeout_destruction_summary))},
                 value = timeout.toFloat(),
                 onValueChange = { timeout = it.toInt() },
                 label = timeoutStr
+            )
+
+            var cacheSize by remember { TtsConfig.cacheSize }
+            val cacheSizeStr = cacheSize.toString()
+            SliderPreference(
+                valueRange = 1f..10f,
+                title = { Text(stringResource(R.string.cache_size)) },
+                subTitle = { Text(stringResource(R.string.cache_size_summary))},
+                value = cacheSize.toFloat(),
+                onValueChange = { cacheSize = it.toInt() },
+                label = cacheSizeStr
+            )
+
+            var threadNum by remember { TtsConfig.threadNum }
+            val threadNumStr = threadNum.toString()
+            SliderPreference(
+                valueRange = 1f..8f,
+                title = { Text(stringResource(R.string.thread_num)) },
+                subTitle = { Text(stringResource(R.string.thread_num_summary))},
+                value = threadNum.toFloat(),
+                onValueChange = { threadNum = it.toInt() },
+                label = threadNumStr
             )
         }
     }
