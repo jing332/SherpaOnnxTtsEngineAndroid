@@ -1,1 +1,3 @@
-fix: navigation
+- automatic download and installation model
+- batch change language
+- model list reorder
