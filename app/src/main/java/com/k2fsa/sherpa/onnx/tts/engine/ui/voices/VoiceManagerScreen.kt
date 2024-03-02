@@ -1,6 +1,7 @@
 package com.k2fsa.sherpa.onnx.tts.engine.ui.voices
 
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -147,6 +148,16 @@ fun VoiceManagerScreen() {
             rememberReorderableLazyListState(listState = vm.listState, onMove = { from, to ->
                 vm.move(from.index, to.index)
             })
+
+        if (vm.voices.isEmpty()) {
+            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                Text(
+                    text = stringResource(id = R.string.no_voices_tips),
+                    style = MaterialTheme.typography.titleMedium
+                )
+            }
+        }
+
         LazyColumn(
             Modifier
                 .padding(paddingValues)

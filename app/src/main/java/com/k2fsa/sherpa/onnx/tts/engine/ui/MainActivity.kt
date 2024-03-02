@@ -110,12 +110,12 @@ class MainActivity : ComponentActivity() {
                         }
 
                         Item(
-                            R.string.model_manager,
+                            R.string.model,
                             NavRoutes.ModelManager.id,
                             Icons.Default.FilePresent
                         )
                         Item(
-                            R.string.voice_manager,
+                            R.string.voice,
                             NavRoutes.SpeakerManager.id,
                             Icons.Default.RecordVoiceOver
                         )

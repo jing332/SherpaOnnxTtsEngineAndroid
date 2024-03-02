@@ -73,4 +73,7 @@
     <string name="please_select">Please select</string>
     <string name="sample_text_summary">"Configure sample text for each language "</string>
     <string name="edit_name">Edit name</string>
+    <string name="no_models_tips">No model, please add from top-right.</string>
+    <string name="no_voices_tips">No voice, please add from top-right.</string>
+    <string name="voice">Voice</string>
 </resources>
