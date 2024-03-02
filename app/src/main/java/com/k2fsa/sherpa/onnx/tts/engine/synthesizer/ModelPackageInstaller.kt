@@ -29,7 +29,6 @@ object ModelPackageInstaller {
         FileUtils.deleteDirectory(File(FileConst.cacheDownloadDir))
     }
 
-
     @OptIn(ExperimentalSerializationApi::class)
     suspend fun getTtsModels(): List<GithubRelease.Asset> = coroutineScope {
         val resp = Get<Response>("").await()
@@ -40,6 +39,20 @@ object ModelPackageInstaller {
         else {
             throw ResponseException(resp, "Failed to get tts models, ${resp.code} ${resp.message}")
         }
+    }
+
+    /**
+     * Delete directory: [FileConst.modelDir]/[modelId]
+     */
+    fun deleteModelPackage(modelId: String): Boolean {
+        val dir = File(FileConst.modelDir + File.separator + modelId)
+        try {
+            FileUtils.deleteDirectory(dir)
+        } catch (_: Exception) {
+            return false
+        }
+
+        return true
     }
 
     /**

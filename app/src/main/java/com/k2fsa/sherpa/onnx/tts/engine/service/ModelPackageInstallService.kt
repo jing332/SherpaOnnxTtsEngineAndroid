@@ -15,6 +15,7 @@ import androidx.core.net.toUri
 import com.drake.net.component.Progress
 import com.k2fsa.sherpa.onnx.tts.engine.NotificationConst
 import com.k2fsa.sherpa.onnx.tts.engine.R
+import com.k2fsa.sherpa.onnx.tts.engine.conf.AppConfig
 import com.k2fsa.sherpa.onnx.tts.engine.synthesizer.ModelPackageInstaller
 import com.k2fsa.sherpa.onnx.tts.engine.ui.MainActivity
 import com.k2fsa.sherpa.onnx.tts.engine.utils.NotificationUtils
@@ -26,6 +27,7 @@ import com.k2fsa.sherpa.onnx.tts.engine.utils.formatFileSize
 import com.k2fsa.sherpa.onnx.tts.engine.utils.notificationManager
 import com.k2fsa.sherpa.onnx.tts.engine.utils.pendingIntentFlags
 import com.k2fsa.sherpa.onnx.tts.engine.utils.startForegroundCompat
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.cancel
@@ -100,7 +102,6 @@ class ModelPackageInstallService : Service() {
             setContentTitle(title)
             setContentText(content)
             setSmallIcon(R.mipmap.ic_launcher)
-            setAutoCancel(true)
             setVisibility(Notification.VISIBILITY_PUBLIC)
 
             setProgress(100, progress, progress == -1)
@@ -150,17 +151,16 @@ class ModelPackageInstallService : Service() {
         setTimeout()
         notificationThrottle.runAction {
             if (mNotificationId != NotificationUtils.UNSPECIFIED_ID)
-                notificationManager.notify(
+                startForegroundCompat(
                     mNotificationId,
                     createNotification(progress, title, content)
                 )
         }
     }
 
-    // 4% [1MB / 25MB]
+    // [1MB / 25MB] 100 KB/s
     private fun Progress.toNotificationContent(): String =
-        "${progress()}% \t [${currentSize()}/${totalSize()}]"
-
+        "[${currentSize()} / ${totalSize()}] \t ${speedSize()}/s"
 
     override fun onStartCommand(intent: Intent, flags: Int, startId: Int): Int {
         val mUri = intent.data?.toString() ?: run {
@@ -184,7 +184,18 @@ class ModelPackageInstallService : Service() {
         )
 
         mScope.launch {
-            execute(mUri, mFileName)
+            runCatching {
+                execute(mUri, mFileName)
+            }.onFailure {
+                if (it is CancellationException) return@onFailure
+
+                Log.e(TAG, "onStartCommand: execute failed", it)
+                sendNotification(
+                    channelId = NotificationConst.MODEL_PACKAGE_INSTALLER_CHANNEL,
+                    title = getString(R.string.model_install_failed),
+                    content = it.message ?: getString(R.string.error)
+                )
+            }
             stopSelf()
         }
 
@@ -222,8 +233,12 @@ class ModelPackageInstallService : Service() {
                 onStartMoveFiles = ::updateStartMoveFiles
             )
         } else {
+            val url = if (AppConfig.ghProxyUrl.value.isEmpty())
+                uri
+            else
+                "${AppConfig.ghProxyUrl.value.removeSuffix("/")}/$uri"
             ModelPackageInstaller.installPackageFromUrl(
-                url = uri,
+                url = url,
                 fileName = fileName,
                 onDownloadProgress = {
                     updateNotification(

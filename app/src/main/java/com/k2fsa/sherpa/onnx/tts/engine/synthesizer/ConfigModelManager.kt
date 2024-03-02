@@ -56,8 +56,8 @@ object ConfigModelManager {
     }
 
     @Synchronized
-    fun removeModel(model: Model) {
-        models.remove(model)
+    fun removeModel(vararg model: Model) {
+        models.removeAll(model.toSet())
         ConfigManager.updateConfig(ConfigManager.config.copy(models = models))
         notifyModelsChange()
     }

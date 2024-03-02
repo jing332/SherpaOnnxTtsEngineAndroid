@@ -76,4 +76,8 @@
     <string name="no_models_tips">No model, please add from top-right.</string>
     <string name="no_voices_tips">No voice, please add from top-right.</string>
     <string name="voice">Voice</string>
+    <string name="github_proxy">Github proxy</string>
+    <string name="github_proxy_summary">Use proxy url when downloading models from Github</string>
+    <string name="delete_model">Delete model</string>
+    <string name="delete_model_file">Delete model file</string>
 </resources>

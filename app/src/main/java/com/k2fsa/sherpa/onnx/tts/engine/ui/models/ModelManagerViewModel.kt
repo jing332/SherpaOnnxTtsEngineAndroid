@@ -1,13 +1,11 @@
 package com.k2fsa.sherpa.onnx.tts.engine.ui.models
 
 import androidx.compose.foundation.lazy.LazyListState
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.k2fsa.sherpa.onnx.tts.engine.synthesizer.ConfigModelManager
+import com.k2fsa.sherpa.onnx.tts.engine.synthesizer.ModelPackageInstaller
 import com.k2fsa.sherpa.onnx.tts.engine.synthesizer.config.Model
 import com.k2fsa.sherpa.onnx.tts.engine.ui.ImplViewModel
 import kotlinx.coroutines.Dispatchers
@@ -32,7 +30,7 @@ class ModelManagerViewModel : ImplViewModel() {
                 ConfigModelManager.load()
             }.onSuccess {
                 ConfigModelManager.modelsFlow.collectLatest {
-                    println("collect: ${it.hashCode()}")
+                    selectedModels.clear()
                     models.value = it
                 }
             }.onFailure {
@@ -71,5 +69,17 @@ class ModelManagerViewModel : ImplViewModel() {
             selectedModels.clear()
             selectedModels.addAll(it)
         }
+    }
+
+    fun clearSelect() {
+        selectedModels.clear()
+    }
+
+    fun deleteModels(models: List<Model>, deleteFile: Boolean) {
+        if (deleteFile)
+            models.forEach {
+                ModelPackageInstaller.deleteModelPackage(it.id)
+            }
+        ConfigModelManager.removeModel(*models.toTypedArray())
     }
 }

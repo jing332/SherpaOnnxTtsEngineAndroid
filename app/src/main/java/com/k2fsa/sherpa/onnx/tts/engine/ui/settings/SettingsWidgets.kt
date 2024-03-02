@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.ripple.rememberRipple
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.LocalTextStyle
@@ -34,9 +35,11 @@ import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import com.k2fsa.sherpa.onnx.tts.engine.ui.widgets.LabelSlider
 import com.k2fsa.sherpa.onnx.tts.engine.R
 import com.k2fsa.sherpa.onnx.tts.engine.ui.widgets.AppDialog
+import com.k2fsa.sherpa.onnx.tts.engine.ui.widgets.DenseOutlinedField
+import com.k2fsa.sherpa.onnx.tts.engine.ui.widgets.LabelSlider
+import com.k2fsa.sherpa.onnx.tts.engine.ui.widgets.OkButton
 
 @Composable
 internal fun DropdownPreference(
@@ -58,6 +61,48 @@ internal fun DropdownPreference(
             actions()
         }
     }
+}
+
+@Composable
+fun TextFieldPreference(
+    modifier: Modifier = Modifier,
+    icon: @Composable () -> Unit = {},
+    title: @Composable () -> Unit,
+    subTitle: @Composable () -> Unit,
+
+    value: String,
+    onValueChange: (String) -> Unit,
+) {
+    var showDialog by remember { mutableStateOf(false) }
+    if (showDialog) {
+        var text by remember(value) { mutableStateOf(value) }
+        AlertDialog(
+            title = title,
+            text = {
+                DenseOutlinedField(
+                    value = text,
+                    onValueChange = { text = it },
+//                        modifier = Modifier.padding(top = 8.dp)
+                )
+            },
+            onDismissRequest = { showDialog = false },
+            confirmButton = {
+                OkButton {
+                    onValueChange(text)
+                }
+            }, dismissButton = {
+                TextButton(onClick = { showDialog = false }) {
+                    Text(stringResource(id = R.string.close))
+                }
+            }
+        )
+    }
+
+    BasePreferenceWidget(icon = icon, title = title, subTitle = subTitle, onClick = {
+
+    }, content = {
+
+    })
 }
 
 @Composable
@@ -170,11 +215,6 @@ internal fun SliderPreference(
     steps: Int = 0,
     label: String,
 ) {
-    val view = LocalView.current
-    LaunchedEffect(value) {
-        view.announceForAccessibility(value.toString())
-    }
-
     PreferenceDialog(
         title = title,
         subTitle = subTitle,
