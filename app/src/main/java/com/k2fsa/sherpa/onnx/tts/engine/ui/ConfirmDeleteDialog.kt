@@ -15,6 +15,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import com.k2fsa.sherpa.onnx.tts.engine.R
+import com.k2fsa.sherpa.onnx.tts.engine.ui.widgets.DeleteForeverIcon
 
 @Composable
 fun ConfirmDeleteDialog(
@@ -60,11 +61,7 @@ fun ConfirmDeleteDialog(
             }
         },
         icon = {
-            Icon(
-                Icons.Default.DeleteForever,
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.error
-            )
+            DeleteForeverIcon(null)
         }
     )
 }

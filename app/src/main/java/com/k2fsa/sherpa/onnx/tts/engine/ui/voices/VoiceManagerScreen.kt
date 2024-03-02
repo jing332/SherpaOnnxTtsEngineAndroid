@@ -1,6 +1,7 @@
 package com.k2fsa.sherpa.onnx.tts.engine.ui.voices
 
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -11,7 +12,6 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ContentCopy
-import androidx.compose.material.icons.filled.DeleteForever
 import androidx.compose.material.icons.filled.EditNote
 import androidx.compose.material.icons.filled.Headset
 import androidx.compose.material.icons.filled.MoreVert
@@ -40,6 +40,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
@@ -53,11 +54,12 @@ import com.k2fsa.sherpa.onnx.tts.engine.ui.ConfirmDeleteDialog
 import com.k2fsa.sherpa.onnx.tts.engine.ui.ErrorHandler
 import com.k2fsa.sherpa.onnx.tts.engine.ui.ShadowReorderableItem
 import com.k2fsa.sherpa.onnx.tts.engine.ui.widgets.AppSelectionToolBar
+import com.k2fsa.sherpa.onnx.tts.engine.ui.widgets.DeleteMenuItem
 import com.k2fsa.sherpa.onnx.tts.engine.ui.widgets.SelectableCard
 import com.k2fsa.sherpa.onnx.tts.engine.ui.widgets.SelectionToolBarState
 import com.k2fsa.sherpa.onnx.tts.engine.ui.widgets.TextFieldDialog
 import com.k2fsa.sherpa.onnx.tts.engine.ui.widgets.VerticalBar
-import com.k2fsa.sherpa.onnx.tts.engine.utils.clickableRipple
+import com.k2fsa.sherpa.onnx.tts.engine.utils.performLongPress
 import com.k2fsa.sherpa.onnx.tts.engine.utils.toast
 import org.burnoutcrew.reorderable.detectReorder
 import org.burnoutcrew.reorderable.rememberReorderableLazyListState
@@ -67,6 +69,7 @@ import org.burnoutcrew.reorderable.reorderable
 @Composable
 fun VoiceManagerScreen() {
     val vm: VoiceManagerViewModel = viewModel()
+    val context = LocalContext.current
 
     var showAddVoiceDialog by remember { mutableStateOf<Voice?>(null) }
     if (showAddVoiceDialog != null) {
@@ -92,20 +95,33 @@ fun VoiceManagerScreen() {
         }
     }
 
+    var showDeleteDialog by remember { mutableStateOf<List<Voice>?>(null) }
+    if (showDeleteDialog != null) {
+        val voices = showDeleteDialog!!
+        ConfirmDeleteDialog(
+            onDismissRequest = { showDeleteDialog = null },
+            name = voices.joinToString { it.name },
+        ) {
+            vm.delete(voices)
+            showDeleteDialog = null
+        }
+    }
+
 
     var showAudition by remember { mutableStateOf<Voice?>(null) }
     if (showAudition != null) {
         AuditionDialog(onDismissRequest = { showAudition = null }, voice = showAudition!!)
     }
 
+    val selectionState = remember {
+        SelectionToolBarState(
+            onSelectAll = vm::selectAll,
+            onSelectInvert = vm::selectInvert,
+            onSelectClear = vm::selectClear
+        )
+    }
+
     Scaffold(topBar = {
-        val selectionState = remember {
-            SelectionToolBarState(
-                onSelectAll = { /*TODO*/ },
-                onSelectInvert = { /*TODO*/ },
-                onSelectClear = { /*TODO*/ }
-            )
-        }
         AppSelectionToolBar(state = selectionState, mainBar = {
             TopAppBar(title = { Text(stringResource(id = R.string.app_name)) }, actions = {
                 IconButton(onClick = {
@@ -140,13 +156,27 @@ fun VoiceManagerScreen() {
                 }
             })
         }) {
+            var showOptions by rememberSaveable { mutableStateOf(false) }
+            IconButton(onClick = { showOptions = true }) {
+                Icon(Icons.Default.MoreVert, stringResource(id = R.string.more_options))
 
+                DropdownMenu(expanded = showOptions, onDismissRequest = { showOptions = false }) {
+                    DeleteMenuItem {
+                        showOptions = false
+                        showDeleteDialog = vm.selects.toList()
+                    }
+                }
+            }
         }
     }) { paddingValues ->
         LaunchedEffect(key1 = vm) {
             vm.load()
         }
         ErrorHandler(vm = vm)
+
+        LaunchedEffect(key1 = vm.selects.size) {
+            selectionState.selectedCount.value = vm.selects.size
+        }
 
         val reorderState =
             rememberReorderableLazyListState(listState = vm.listState, onMove = { from, to ->
@@ -162,6 +192,7 @@ fun VoiceManagerScreen() {
             }
         }
 
+        val isSelectMode = vm.selects.isNotEmpty()
         LazyColumn(
             Modifier
                 .padding(paddingValues)
@@ -172,11 +203,15 @@ fun VoiceManagerScreen() {
             items(vm.voices, key = { it.toString() }) { voice ->
                 ShadowReorderableItem(reorderableState = reorderState, key = voice.toString()) {
                     val enabled = voice.contains(TtsConfig.voice.value)
-
+                    val selected = vm.isSelected(voice)
                     val available = remember(voice) { vm.isModelAvailable(voice) }
                     LaunchedEffect(key1 = available) {
                         if (!available && voice.contains(TtsConfig.voice.value))
                             TtsConfig.voice.value = Voice.EMPTY
+                    }
+
+                    fun select() {
+                        if (selected) vm.unselect(voice) else vm.select(voice)
                     }
 
                     Item(
@@ -191,14 +226,22 @@ fun VoiceManagerScreen() {
                         model = voice.model,
                         id = voice.id.toString(),
                         onClick = {
-                            if (enabled) {
-
-                            } else {
-                                TtsConfig.voice.value = voice
+                            if (isSelectMode) select()
+                            else {
+                                if (available)
+                                    TtsConfig.voice.value = voice
+                                else
+                                    context.toast(
+                                        context.getString(R.string.model_not_found, voice.model)
+                                    )
                             }
                         },
+                        onLongClick = {
+                            select()
+                        },
+
                         onCopy = { showAddVoiceDialog = voice },
-                        onDelete = { vm.delete(voice) },
+                        onDelete = { showDeleteDialog = listOf(voice) },
                         onAudition = { showAudition = voice },
                         onEditName = { showEditNameDialog = voice }
                     )
@@ -208,6 +251,7 @@ fun VoiceManagerScreen() {
     }
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 private fun Item(
     modifier: Modifier,
@@ -222,19 +266,15 @@ private fun Item(
     model: String,
 
     onClick: () -> Unit,
+    onLongClick: () -> Unit,
+
     onEditName: () -> Unit,
     onAudition: () -> Unit,
     onCopy: () -> Unit,
     onDelete: () -> Unit,
 ) {
-    var showDeleteDialog by remember { mutableStateOf(false) }
-    if (showDeleteDialog) {
-        ConfirmDeleteDialog(onDismissRequest = { showDeleteDialog = false }, name = name) {
-            onDelete()
-        }
-    }
-
     val context = LocalContext.current
+    val view = LocalView.current
     val color =
         if (available)
             if (enabled) MaterialTheme.colorScheme.primary else Color.Unspecified
@@ -246,12 +286,15 @@ private fun Item(
     SelectableCard(
         modifier
             .clip(CardDefaults.shape)
-            .clickableRipple {
-                if (available)
+            .combinedClickable(
+                onClick = {
                     onClick()
-                else
-                    context.toast(R.string.model_not_found, model)
-            },
+                },
+                onLongClick = {
+                    view.performLongPress()
+                    onLongClick()
+                }
+            ),
         selected = selected
     ) {
         Row(Modifier.padding(4.dp), verticalAlignment = Alignment.CenterVertically) {
@@ -290,7 +333,10 @@ private fun Item(
                 }
 
                 var showOptions by rememberSaveable { mutableStateOf(false) }
-                IconButton(modifier = reorderModifier,colors = iconButtonColors, onClick = { showOptions = true }) {
+                IconButton(
+                    modifier = reorderModifier,
+                    colors = iconButtonColors,
+                    onClick = { showOptions = true }) {
                     Icon(
                         Icons.Default.MoreVert,
                         stringResource(id = R.string.more_options),
@@ -301,7 +347,10 @@ private fun Item(
                         onDismissRequest = { showOptions = false }) {
                         DropdownMenuItem(
                             text = { Text(stringResource(id = R.string.edit_name)) },
-                            onClick = onEditName,
+                            onClick = {
+                                showOptions = false
+                                onEditName()
+                            },
                             leadingIcon = {
                                 Icon(Icons.Default.EditNote, null)
                             }
@@ -309,19 +358,19 @@ private fun Item(
 
                         DropdownMenuItem(
                             text = { Text(stringResource(id = android.R.string.copy)) },
-                            onClick = onCopy,
+                            onClick = {
+                                showOptions = false
+                                onCopy()
+                            },
                             leadingIcon = {
                                 Icon(Icons.Default.ContentCopy, null)
                             }
                         )
 
-                        DropdownMenuItem(
-                            text = { Text(stringResource(id = R.string.delete)) },
-                            onClick = { showDeleteDialog = true },
-                            leadingIcon = {
-                                Icon(Icons.Default.DeleteForever, null)
-                            }
-                        )
+                        DeleteMenuItem {
+                            showOptions = false
+                            onDelete()
+                        }
                     }
                 }
             }

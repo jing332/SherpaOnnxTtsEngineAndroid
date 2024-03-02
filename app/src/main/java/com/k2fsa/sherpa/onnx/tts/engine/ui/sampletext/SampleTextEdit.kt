@@ -24,6 +24,7 @@ import androidx.compose.ui.unit.dp
 import com.k2fsa.sherpa.onnx.tts.engine.R
 import com.k2fsa.sherpa.onnx.tts.engine.ui.theme.SherpaOnnxTtsEngineTheme
 import com.k2fsa.sherpa.onnx.tts.engine.ui.widgets.AppDialog
+import com.k2fsa.sherpa.onnx.tts.engine.ui.widgets.DeleteForeverIcon
 import com.k2fsa.sherpa.onnx.tts.engine.ui.widgets.DenseOutlinedField
 
 @Preview
@@ -93,10 +94,7 @@ fun SampleTextEdit(modifier: Modifier, list: List<String>, onListChange: (List<S
                             newList.removeAt(index)
                             onListChange(newList)
                         }) {
-                            Icon(
-                                imageVector = Icons.Default.DeleteForever,
-                                contentDescription = stringResource(R.string.delete)
-                            )
+                           DeleteForeverIcon()
                         }
                     }
                 )
