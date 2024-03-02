@@ -21,7 +21,7 @@ object CompressUtils {
         fun onEntryProgress(name: String, entrySize: Long, bytes: Long)
     }
 
-    private suspend fun ArchiveInputStream<*>.uncompress(
+    suspend fun ArchiveInputStream<*>.uncompress(
         outputDir: String,
         progressListener: ProgressListener
     ) {
@@ -62,25 +62,7 @@ object CompressUtils {
         }
     }
 
-    suspend fun uncompressTarBzip2(
-        ins: InputStream,
-        outputDir: String,
-        progressListener: ProgressListener
-    ) {
-        TarArchiveInputStream(BZip2CompressorInputStream(ins)).use { tarIn ->
-            tarIn.uncompress(outputDir, progressListener)
-        }
-    }
 
-    suspend fun uncompressZip(
-        ins: InputStream,
-        outputDir: String,
-        progressListener: ProgressListener
-    ) {
-        ZipArchiveInputStream(ins).use { zipIn ->
-            zipIn.uncompress(outputDir, progressListener)
-        }
-    }
 
     private fun createFile(outputDir: String, name: String): File {
         return File(outputDir + File.separator + name)

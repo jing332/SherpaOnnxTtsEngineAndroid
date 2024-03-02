@@ -1,6 +1,7 @@
 package com.k2fsa.sherpa.onnx.tts.engine.ui.models
 
 import android.content.Intent
+import android.graphics.Paint.Align
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -24,6 +25,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.core.net.toUri
@@ -71,7 +73,9 @@ fun ModelDownloadInstallDialog(
         title = { Text(stringResource(id = R.string.download_model)) }, content = {
             if (vm.error.isNotEmpty())
                 Text(
-                    vm.error,
+                    text = vm.error,
+                    modifier = Modifier.align(Alignment.Center),
+                    textAlign = TextAlign.Center,
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.error
                 )
@@ -84,7 +88,7 @@ fun ModelDownloadInstallDialog(
                 Column(Modifier.fillMaxWidth()) {
                     val state = rememberLazyListState()
                     var search by rememberSaveable { mutableStateOf("") }
-                    if (!isLoading)
+                    if (!isLoading && vm.error.isNotBlank())
                         SearchTextFieldInList(
                             Modifier.align(Alignment.CenterHorizontally),
                             onSearch = { search = it }

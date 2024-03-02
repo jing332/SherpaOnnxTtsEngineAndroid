@@ -17,6 +17,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.documentfile.provider.DocumentFile
 import com.k2fsa.sherpa.onnx.tts.engine.R
 import com.k2fsa.sherpa.onnx.tts.engine.service.ModelPackageInstallService
+import com.k2fsa.sherpa.onnx.tts.engine.synthesizer.ModelPackageInstaller
 import com.k2fsa.sherpa.onnx.tts.engine.utils.grantReadPermission
 import com.k2fsa.sherpa.onnx.tts.engine.utils.longToast
 
@@ -58,8 +59,11 @@ fun ImportModelPackageDialog(onDismissRequest: () -> Unit) {
                 return@rememberLauncherForActivityResult
             }
 
-            if (!file.endsWith("tar.bz2")) {
-                context.longToast(R.string.only_tar_bz2_files_are_supported)
+            if (ModelPackageInstaller.supportedTypes.none { file.endsWith(it) }) {
+                context.longToast(
+                    R.string.only_ext_files_are_supported,
+                    ModelPackageInstaller.supportedTypes.joinToString(" ")
+                )
 
                 onDismissRequest()
                 return@rememberLauncherForActivityResult
@@ -73,7 +77,7 @@ fun ImportModelPackageDialog(onDismissRequest: () -> Unit) {
         }
 
     LaunchedEffect(key1 = Unit) {
-        filepicker.launch(arrayOf("application/*"))
+        filepicker.launch(arrayOf("*/*"))
     }
 
 

@@ -78,7 +78,7 @@ class ModelManagerViewModel : ImplViewModel() {
     fun deleteModels(models: List<Model>, deleteFile: Boolean) {
         if (deleteFile)
             models.forEach {
-                ModelPackageInstaller.deleteModelPackage(it.id)
+                ModelPackageInstaller.deleteModel(it.id)
             }
         ConfigModelManager.removeModel(*models.toTypedArray())
     }

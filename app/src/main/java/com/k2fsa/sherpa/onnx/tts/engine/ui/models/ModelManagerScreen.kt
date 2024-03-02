@@ -134,7 +134,7 @@ fun ModelManagerScreen() {
             ModelManagerMainToolBar(
                 modifier = Modifier,
                 onAddModels = { showImportDialog = true },
-                onImportModels = { showImportDialog = true },
+                onImportModels = { showImportPackageDialog = true },
                 onDownloadModels = { showDlModelDialog = true }
             )
         }) {

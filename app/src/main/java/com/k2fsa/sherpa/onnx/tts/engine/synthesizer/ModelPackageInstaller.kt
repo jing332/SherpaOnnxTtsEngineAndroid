@@ -8,6 +8,7 @@ import com.k2fsa.sherpa.onnx.tts.engine.AppConst
 import com.k2fsa.sherpa.onnx.tts.engine.FileConst
 import com.k2fsa.sherpa.onnx.tts.engine.GithubRelease
 import com.k2fsa.sherpa.onnx.tts.engine.utils.CompressUtils
+import com.k2fsa.sherpa.onnx.tts.engine.utils.CompressorFactory
 import kotlinx.coroutines.coroutineScope
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.decodeFromStream
@@ -18,6 +19,15 @@ import java.io.InputStream
 import java.util.UUID
 
 object ModelPackageInstaller {
+    val supportedTypes = listOf(
+        "tar.bz2",
+        "tgz",
+        "tar.gz",
+        "txz",
+        "tar.xz",
+        "zip"
+    )
+
     init {
         runCatching {
             clearCache()
@@ -44,7 +54,7 @@ object ModelPackageInstaller {
     /**
      * Delete directory: [FileConst.modelDir]/[modelId]
      */
-    fun deleteModelPackage(modelId: String): Boolean {
+    fun deleteModel(modelId: String): Boolean {
         val dir = File(FileConst.modelDir + File.separator + modelId)
         try {
             FileUtils.deleteDirectory(dir)
@@ -61,16 +71,17 @@ object ModelPackageInstaller {
      * [subDir] default to UUID
      */
     suspend fun extractModelPackage(
+        type: String,
         ins: InputStream,
         progressListener: CompressUtils.ProgressListener,
         subDir: String = UUID.randomUUID().toString(),
     ): String {
         val target = FileConst.cacheModelDir + File.separator + subDir
-        CompressUtils.uncompressTarBzip2(
-            ins = ins,
-            outputDir = target,
-            progressListener = progressListener
+
+        val compressor = CompressorFactory.createCompressor(type) ?: throw IllegalArgumentException(
+            "Unsupported type: $type"
         )
+        compressor.uncompress(ins, target, progressListener)
 
         return target
     }
@@ -98,11 +109,12 @@ object ModelPackageInstaller {
      * [ins] *.tar.bz2 input stream
      */
     suspend fun installPackage(
+        type: String,
         ins: InputStream,
         onUnzipProgress: (file: String, total: Long, current: Long) -> Unit,
         onStartMoveFiles: () -> Unit
     ): Boolean {
-        val target = extractModelPackage(ins, progressListener = { name, entrySize, bytes ->
+        val target = extractModelPackage(type, ins, progressListener = { name, entrySize, bytes ->
             onUnzipProgress(name, entrySize, bytes)
         })
 
@@ -124,8 +136,10 @@ object ModelPackageInstaller {
             onDownloadProgress(it)
         }
 
+        val type = fileName.substringAfter(".")
+
         return file.inputStream().use {
-            installPackage(it, onUnzipProgress, onStartMoveFiles)
+            installPackage(type, it, onUnzipProgress, onStartMoveFiles)
         }
     }
 

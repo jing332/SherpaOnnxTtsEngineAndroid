@@ -64,7 +64,11 @@ object ConfigModelManager {
 
     @Synchronized
     fun addModel(vararg model: Model) {
-        models.addAll(model)
+        model.forEach { m ->
+            if (!models.any { it.id == m.id })
+                models.add(m)
+        }
+
         ConfigManager.updateConfig(ConfigManager.config.copy(models = models))
         notifyModelsChange()
     }
