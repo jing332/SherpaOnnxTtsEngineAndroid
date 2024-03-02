@@ -105,6 +105,8 @@ dependencies {
     implementation("androidx.documentfile:documentfile:1.0.1")
 
     implementation("org.apache.commons:commons-compress:1.26.0")
+    implementation("org.tukaani:xz:1.9")
+
 
     implementation("com.geyifeng.immersionbar:immersionbar:3.2.2")
     implementation("com.geyifeng.immersionbar:immersionbar-ktx:3.2.2")

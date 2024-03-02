@@ -36,7 +36,7 @@
     <string name="unzipping">Decompressing</string>
     <string name="unzipping_finished">Decompressing finished</string>
     <string name="add_models">Add models</string>
-    <string name="only_tar_bz2_files_are_supported">❌ Only .tar.bz2 files are supported</string>
+    <string name="only_ext_files_are_supported">❌ Only [%1$s] files are supported</string>
     <string name="unable_get_file_name">❌ Unable get file name</string>
     <string name="unable_grant_read_permission">❌ Unable to grant read permission</string>
     <string name="task_added_tips">The background task has been added, please check the progress from the system notification.</string>

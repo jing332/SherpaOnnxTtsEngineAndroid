@@ -9,9 +9,11 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.os.Build
 import android.os.IBinder
+import android.os.SystemClock
 import android.util.Log
 import androidx.core.content.ContextCompat
 import androidx.core.net.toUri
+import androidx.documentfile.provider.DocumentFile
 import com.drake.net.component.Progress
 import com.k2fsa.sherpa.onnx.tts.engine.NotificationConst
 import com.k2fsa.sherpa.onnx.tts.engine.R
@@ -24,7 +26,6 @@ import com.k2fsa.sherpa.onnx.tts.engine.utils.NotificationUtils.sendNotification
 import com.k2fsa.sherpa.onnx.tts.engine.utils.ThrottleUtil
 import com.k2fsa.sherpa.onnx.tts.engine.utils.fileName
 import com.k2fsa.sherpa.onnx.tts.engine.utils.formatFileSize
-import com.k2fsa.sherpa.onnx.tts.engine.utils.notificationManager
 import com.k2fsa.sherpa.onnx.tts.engine.utils.pendingIntentFlags
 import com.k2fsa.sherpa.onnx.tts.engine.utils.startForegroundCompat
 import kotlinx.coroutines.CancellationException
@@ -93,6 +94,7 @@ class ModelPackageInstallService : Service() {
 
     @Suppress("DEPRECATION")
     private fun createNotification(
+        summary: String,
         progress: Int,
         title: String,
         content: String
@@ -102,7 +104,13 @@ class ModelPackageInstallService : Service() {
             setContentTitle(title)
             setContentText(content)
             setSmallIcon(R.mipmap.ic_launcher)
-            setVisibility(Notification.VISIBILITY_PUBLIC)
+//            setVisibility(Notification.VISIBILITY_PUBLIC)
+            style = Notification.BigTextStyle().setSummaryText(summary).setBigContentTitle(title)
+                .bigText(content)
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                setForegroundServiceBehavior(Notification.FOREGROUND_SERVICE_IMMEDIATE)
+            }
 
             setProgress(100, progress, progress == -1)
 
@@ -146,15 +154,18 @@ class ModelPackageInstallService : Service() {
         }
     }
 
-    private val notificationThrottle = ThrottleUtil(mScope, time = 500L)
-    private fun updateNotification(progress: Int, title: String, content: String) {
+    private var mLastUpdateNotification = 0L
+    private fun updateNotification(summary: String, progress: Int, title: String, content: String) {
         setTimeout()
-        notificationThrottle.runAction {
-            if (mNotificationId != NotificationUtils.UNSPECIFIED_ID)
-                startForegroundCompat(
-                    mNotificationId,
-                    createNotification(progress, title, content)
-                )
+        if (mNotificationId != NotificationUtils.UNSPECIFIED_ID) {
+            if (SystemClock.elapsedRealtime() - mLastUpdateNotification < 500) return
+
+            Log.d(TAG, "startForegroundCompat: $progress, $title, $content")
+            startForegroundCompat(
+                mNotificationId,
+                createNotification(summary, progress, title, content)
+            )
+            mLastUpdateNotification = SystemClock.elapsedRealtime()
         }
     }
 
@@ -174,13 +185,11 @@ class ModelPackageInstallService : Service() {
         }
         Log.i(TAG, "onStartCommand: uri=$mUri, fileName=$mFileName")
 
-        startForegroundCompat(
-            mNotificationId,
-            createNotification(
-                0,
-                getString(if (mFileName.isEmpty()) R.string.model_package_installer else R.string.downloading),
-                mFileName
-            )
+        updateNotification(
+            "",
+            0,
+            getString(if (mFileName.isEmpty()) R.string.model_package_installer else R.string.downloading),
+            mFileName
         )
 
         mScope.launch {
@@ -202,22 +211,24 @@ class ModelPackageInstallService : Service() {
         return super.onStartCommand(intent, flags, startId)
     }
 
-    private suspend fun execute(uri: String, fileName: String) {
-        Log.d(TAG, "execute: $uri, $fileName")
+    private suspend fun execute(uriString: String, fileName: String) {
+        Log.d(TAG, "execute: $uriString, $fileName")
 
         fun updateUnzipProgress(file: String, total: Long, current: Long) {
             val name = file.substringAfterLast('/')
             val str =
-                "$name: ${current.formatFileSize(this)} / ${total.formatFileSize(this)}"
+                "${current.formatFileSize(this)} / ${total.formatFileSize(this)}"
             updateNotification(
+                getString(R.string.unzipping),
                 progress = ((current / total.toDouble()) * 100).toInt(),
-                title = getString(R.string.unzipping),
+                title = name,
                 content = str,
             )
         }
 
         fun updateStartMoveFiles() {
             updateNotification(
+                "",
                 progress = -1,
                 title = getString(R.string.moving_files),
                 content = "..."
@@ -225,23 +236,31 @@ class ModelPackageInstallService : Service() {
         }
 
         val ok = if (fileName.isBlank()) {
-            val ins = contentResolver.openInputStream(uri.toUri())
+            val uri = uriString.toUri()
+            val file = DocumentFile.fromSingleUri(this, uri)
+            val name = file?.name ?: throw IllegalArgumentException("file is null: uri=${uri}")
+            val type = name.substringAfter(".")
+
+            val ins = contentResolver.openInputStream(uri)
                 ?: throw IllegalArgumentException("openInputStream return null: uri=${uri}")
+            Log.d(TAG, "execute: type=$type")
             ModelPackageInstaller.installPackage(
+                type,
                 ins,
                 onUnzipProgress = ::updateUnzipProgress,
                 onStartMoveFiles = ::updateStartMoveFiles
             )
         } else {
             val url = if (AppConfig.ghProxyUrl.value.isEmpty())
-                uri
+                uriString
             else
-                "${AppConfig.ghProxyUrl.value.removeSuffix("/")}/$uri"
+                "${AppConfig.ghProxyUrl.value.removeSuffix("/")}/$uriString"
             ModelPackageInstaller.installPackageFromUrl(
                 url = url,
                 fileName = fileName,
                 onDownloadProgress = {
                     updateNotification(
+                        summary = getString(R.string.downloading),
                         progress = it.progress(),
                         title = fileName,
                         content = it.toNotificationContent()
@@ -257,9 +276,9 @@ class ModelPackageInstallService : Service() {
             title = getString(if (ok) R.string.model_installed else R.string.model_install_failed),
             content = fileName.ifBlank {
                 try {
-                    uri.toUri().fileName(this)
+                    uriString.toUri().fileName(this)
                 } catch (e: Exception) {
-                    Log.e(TAG, "execute: unable to get file name from uri=$uri", e)
+                    Log.e(TAG, "execute: unable to get file name from uri=$uriString", e)
                     ""
                 }
             }

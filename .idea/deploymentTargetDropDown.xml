@@ -19,12 +19,12 @@
               <deviceKey>
                 <Key>
                   <type value="SERIAL_NUMBER" />
-                  <value value="8XV485SSRSAQLN4D" />
+                  <value value="adb-8XV485SSRSAQLN4D-OeP0tX._adb-tls-connect._tcp" />
                 </Key>
               </deviceKey>
             </Target>
           </runningDeviceTargetSelectedWithDropDown>
-          <timeTargetWasSelectedWithDropDown value="2024-02-29T11:13:49.361245700Z" />
+          <timeTargetWasSelectedWithDropDown value="2024-03-02T11:39:22.112519200Z" />
         </State>
       </entry>
       <entry key="app (Nothing)">
