@@ -1,16 +1,25 @@
 package com.k2fsa.sherpa.onnx.tts.engine.conf
 
+import com.funny.data_saver.core.DataSaverConverter
 import com.funny.data_saver.core.DataSaverPreferences
 import com.funny.data_saver.core.mutableDataSaverStateOf
 import com.k2fsa.sherpa.onnx.tts.engine.App
+import com.k2fsa.sherpa.onnx.tts.engine.synthesizer.config.Voice
 
 object TtsConfig {
     private val dataSaverPref = DataSaverPreferences(App.instance.getSharedPreferences("tts", 0))
 
-    val modelId = mutableDataSaverStateOf(
+    init {
+        DataSaverConverter.registerTypeConverters<Voice>(
+            save = { it.toString() },
+            restore = { Voice.from(it) }
+        )
+    }
+
+    val voice = mutableDataSaverStateOf(
         dataSaverInterface = dataSaverPref,
-        key = "modelId",
-        initialValue = ""
+        key = "voice",
+        initialValue = Voice.EMPTY
     )
 
     val timeoutDestruction = mutableDataSaverStateOf(

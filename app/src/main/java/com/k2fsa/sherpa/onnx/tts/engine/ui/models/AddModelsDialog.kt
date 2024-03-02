@@ -21,16 +21,17 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import com.k2fsa.sherpa.onnx.tts.engine.R
 import com.k2fsa.sherpa.onnx.tts.engine.FileConst
-import com.k2fsa.sherpa.onnx.tts.engine.synthesizer.ModelManager
+import com.k2fsa.sherpa.onnx.tts.engine.R
+import com.k2fsa.sherpa.onnx.tts.engine.synthesizer.ConfigModelManager
 import com.k2fsa.sherpa.onnx.tts.engine.synthesizer.config.Model
 
 @Composable
 fun AddModelsDialog(onDismissRequest: () -> Unit) {
     val context = androidx.compose.ui.platform.LocalContext.current
-    val models = remember { ModelManager.getNotAddedModels(context) }
+    val models = remember { ConfigModelManager.getNotAddedModels(context) }
     val checkedModels = remember { mutableStateListOf<Model>() }
     AlertDialog(onDismissRequest = onDismissRequest, title = {
         Column {
@@ -42,7 +43,8 @@ fun AddModelsDialog(onDismissRequest: () -> Unit) {
     }, text = {
         if (models.isEmpty())
             Text(
-                text = stringResource(id = R.string.list_is_empty),
+                textAlign = TextAlign.Center,
+                text = stringResource(R.string.no_models_waiting_to_added),
                 color = MaterialTheme.colorScheme.error
             )
 
@@ -67,7 +69,7 @@ fun AddModelsDialog(onDismissRequest: () -> Unit) {
         }
     }, confirmButton = {
         TextButton(onClick = {
-            ModelManager.addModel(*checkedModels.toTypedArray())
+            ConfigModelManager.addModel(*checkedModels.toTypedArray())
             onDismissRequest()
         }) {
             Text(text = stringResource(id = android.R.string.ok))

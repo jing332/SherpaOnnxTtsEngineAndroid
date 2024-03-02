@@ -14,4 +14,16 @@ data class Model(
     val tokens: String,
 
     val lang: String,
-)
+) {
+    companion object {
+        val EMPTY = Model(
+            id = "",
+            onnx = "",
+            dataDir = "",
+            lexicon = "",
+            ruleFsts = "",
+            tokens = "",
+            lang = ""
+        )
+    }
+}

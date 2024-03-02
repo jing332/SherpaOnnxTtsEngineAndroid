@@ -7,14 +7,16 @@ import android.os.SystemClock
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
-import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.FilePresent
+import androidx.compose.material.icons.filled.RecordVoiceOver
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
@@ -35,6 +37,7 @@ import com.k2fsa.sherpa.onnx.tts.engine.R
 import com.k2fsa.sherpa.onnx.tts.engine.ui.models.ModelManagerScreen
 import com.k2fsa.sherpa.onnx.tts.engine.ui.settings.SettingsScreen
 import com.k2fsa.sherpa.onnx.tts.engine.ui.theme.SherpaOnnxTtsEngineTheme
+import com.k2fsa.sherpa.onnx.tts.engine.ui.voices.VoiceManagerScreen
 import com.k2fsa.sherpa.onnx.tts.engine.utils.navigateSingleTop
 import com.k2fsa.sherpa.onnx.tts.engine.utils.toast
 
@@ -57,6 +60,7 @@ class MainActivity : ComponentActivity() {
 //            )
 //        })
 
+
         setContent {
             var lastBackDownTime by remember { mutableLongStateOf(0L) }
             BackHandler() {
@@ -75,23 +79,7 @@ class MainActivity : ComponentActivity() {
                 val navController = rememberNavController()
                 navController.enableOnBackPressed(false)
                 val entryState by navController.currentBackStackEntryAsState()
-                Column {
-                    CompositionLocalProvider(LocalNavController provides navController) {
-                        NavHost(
-                            modifier = Modifier.weight(1f),
-                            navController = navController,
-                            startDestination = NavRoutes.ModelManager.id
-                        ) {
-                            composable(NavRoutes.ModelManager.id) {
-                                ModelManagerScreen()
-                            }
-
-                            composable(NavRoutes.Settings.id) {
-                                SettingsScreen()
-                            }
-                        }
-                    }
-
+                Scaffold(bottomBar = {
                     fun containsRoute(route: String): Boolean {
                         return entryState?.destination?.route?.contains(route) ?: false
                     }
@@ -103,6 +91,15 @@ class MainActivity : ComponentActivity() {
                                 alwaysShowLabel = false,
                                 selected = containsRoute(id),
                                 onClick = {
+                                    /*navController.navigate(id) {
+                                        navController.graph.startDestinationRoute?.let { route ->
+                                            popUpTo(route) {
+                                                saveState = true
+                                            }
+                                        }
+                                        launchSingleTop = true
+                                        restoreState = true
+                                    }*/
                                     navController.navigateSingleTop(id, popUpToMain = true)
                                 },
                                 icon = { Icon(icon, contentDescription = null) },
@@ -115,15 +112,42 @@ class MainActivity : ComponentActivity() {
                         Item(
                             R.string.model_manager,
                             NavRoutes.ModelManager.id,
-                            Icons.Default.Home
+                            Icons.Default.FilePresent
                         )
-
+                        Item(
+                            R.string.voice_manager,
+                            NavRoutes.SpeakerManager.id,
+                            Icons.Default.RecordVoiceOver
+                        )
                         Item(
                             R.string.settings,
                             NavRoutes.Settings.id,
                             Icons.Default.Settings
                         )
                     }
+                }) {
+                    CompositionLocalProvider(LocalNavController provides navController) {
+                        NavHost(
+                            modifier = Modifier.padding(bottom = it.calculateBottomPadding()),
+                            navController = navController,
+                            startDestination = NavRoutes.SpeakerManager.id
+                        ) {
+
+                            composable(NavRoutes.ModelManager.id) {
+                                ModelManagerScreen()
+                            }
+
+                            composable(NavRoutes.SpeakerManager.id) {
+                                VoiceManagerScreen()
+                            }
+
+                            composable(NavRoutes.Settings.id) {
+                                SettingsScreen()
+                            }
+                        }
+                    }
+
+
                 }
             }
         }

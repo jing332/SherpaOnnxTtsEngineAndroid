@@ -6,14 +6,14 @@ import com.k2fsa.sherpa.onnx.tts.engine.FileConst.configPath
 import kotlinx.serialization.encodeToString
 import java.io.InputStream
 
-object ConfigManager : ImplYamlConfig<ModelConfig>(configPath, { ModelConfig() }) {
+object ConfigManager : ImplYamlConfig<Config>(configPath, { Config() }) {
     const val TAG = "ConfigManager"
 
-    override fun encode(o: ModelConfig): String {
+    override fun encode(o: Config): String {
         return AppConst.yaml.encodeToString(o)
     }
 
-    override fun decode(ins: InputStream): ModelConfig {
+    override fun decode(ins: InputStream): Config {
         return AppConst.yaml.decodeFromStream(ins)
     }
 

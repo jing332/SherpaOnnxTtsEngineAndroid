@@ -71,10 +71,10 @@ object ModelPackageInstaller {
         val dir = source.listFiles { file, _ ->
             file.isDirectory
         }?.getOrNull(0) ?: return false
-        val model = ModelManager.analyzeToModel(dir) ?: return false
+        val model = ConfigModelManager.analyzeToModel(dir) ?: return false
 
         FileUtils.copyDirectory(source, File(FileConst.modelDir))
-        ModelManager.addModel(model)
+        ConfigModelManager.addModel(model)
 
         return true
     }

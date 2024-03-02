@@ -10,10 +10,6 @@ import java.io.FileNotFoundException
 import java.io.InputStream
 
 open class ImplYamlConfig<T>(val filePath: String, val factory: () -> T) {
-    open fun errorHandler(t: Throwable) {
-        app.longToast("Yaml❌: ${t.message ?: t.toString()}")
-    }
-
     open fun decode(ins: InputStream): T {
         throw NotImplementedError("")
     }
@@ -54,15 +50,11 @@ open class ImplYamlConfig<T>(val filePath: String, val factory: () -> T) {
                 return decode(it)
             }
 
-        } catch (e: Exception) {
+        } catch (e: FileNotFoundException) {
             Log.e(ConfigManager.TAG, "readConfig: ", e)
 
             val obj = factory()
-
-            if (e is FileNotFoundException)
-                write(config = obj)
-            else
-                errorHandler(e)
+            write(config = obj)
 
             return obj
         }
@@ -71,10 +63,6 @@ open class ImplYamlConfig<T>(val filePath: String, val factory: () -> T) {
     private fun write(path: String = filePath, config: T) {
         val file = File(path)
 
-        runCatching {
-            file.writeText(encode(config))
-        }.onFailure {
-            errorHandler(it)
-        }
+        file.writeText(encode(config))
     }
 }

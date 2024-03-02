@@ -29,6 +29,27 @@ import androidx.constraintlayout.compose.ConstraintLayout
 import com.k2fsa.sherpa.onnx.tts.engine.R
 import com.k2fsa.sherpa.onnx.tts.engine.utils.performLongPress
 
+@Composable
+fun IntSlider(
+    modifier: Modifier = Modifier,
+    enabled: Boolean = true,
+    label: String,
+    value: Float,
+    onValueChange: (Float) -> Unit,
+    valueRange: ClosedFloatingPointRange<Float>
+) {
+    LabelSlider(
+        modifier = modifier,
+        enabled = enabled,
+        value = value,
+        onValueChange = onValueChange,
+        valueRange = valueRange,
+        text = label,
+        buttonSteps = 1f,
+        buttonLongSteps = 10f
+    )
+}
+
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun LabelSlider(
@@ -89,7 +110,7 @@ fun LabelSlider(
     steps: Int = 0,
     onValueChangeFinished: (() -> Unit)? = null,
 
-    showButton: Boolean = true,
+    showButton: Boolean = enabled,
     buttonSteps: Float = 0.01f,
     buttonLongSteps: Float = 0.1f,
 
@@ -136,7 +157,7 @@ fun LabelSlider(
                     onLongClick = {
                         onValueRemove(true)
                     },
-                    enabled = value > valueRange.start,
+                    enabled = enabled && value > valueRange.start,
                     modifier = Modifier
                         .semantics {
                             contentDescription = a11yDescription
@@ -171,7 +192,7 @@ fun LabelSlider(
                     onLongClick = {
                         onValueAdd(true)
                     },
-                    enabled = value < valueRange.endInclusive,
+                    enabled = enabled && value < valueRange.endInclusive,
                     modifier = Modifier
                         .semantics {
                             contentDescription = a11yDescription

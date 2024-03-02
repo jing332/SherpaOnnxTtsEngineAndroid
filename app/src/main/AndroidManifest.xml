@@ -26,6 +26,11 @@
             android:foregroundServiceType="dataSync" />
 
         <activity
+            android:name=".ui.error.ErrorDialogActivity"
+            android:label="@string/error"
+            android:theme="@android:style/Theme.Translucent.NoTitleBar" />
+
+        <activity
             android:name=".ui.sampletext.SampleTextManagerActivity"
             android:exported="true"
             android:label="@string/sample_text"

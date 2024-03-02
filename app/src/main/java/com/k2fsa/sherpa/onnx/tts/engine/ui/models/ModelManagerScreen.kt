@@ -14,9 +14,9 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material.icons.filled.DeleteForever
 import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material.icons.filled.Headset
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -49,14 +49,11 @@ import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.k2fsa.sherpa.onnx.OfflineTtsConfig
 import com.k2fsa.sherpa.onnx.tts.engine.R
-import com.k2fsa.sherpa.onnx.tts.engine.conf.TtsConfig
-import com.k2fsa.sherpa.onnx.tts.engine.synthesizer.ModelManager
-import com.k2fsa.sherpa.onnx.tts.engine.synthesizer.ModelManager.toOfflineTtsConfig
+import com.k2fsa.sherpa.onnx.tts.engine.synthesizer.ConfigModelManager
 import com.k2fsa.sherpa.onnx.tts.engine.synthesizer.config.Model
-import com.k2fsa.sherpa.onnx.tts.engine.ui.AuditionDialog
 import com.k2fsa.sherpa.onnx.tts.engine.ui.ConfirmDeleteDialog
+import com.k2fsa.sherpa.onnx.tts.engine.ui.ErrorHandler
 import com.k2fsa.sherpa.onnx.tts.engine.ui.ShadowReorderableItem
 import com.k2fsa.sherpa.onnx.tts.engine.utils.performLongPress
 import com.k2fsa.sherpa.onnx.tts.engine.utils.toLocale
@@ -82,9 +79,12 @@ fun ModelManagerScreen() {
         ModelDownloadInstallDialog { showDlModelDialog = false }
 
     val vm: ModelManagerViewModel = viewModel()
-    val toolBarState = remember {
-        ToolBarState()
+    LaunchedEffect(key1 = vm) {
+        vm.load()
     }
+    ErrorHandler(vm = vm)
+
+    val toolBarState = remember { ToolBarState() }
     Scaffold(topBar = {
         ModelManagerToolbar(
             state = toolBarState,
@@ -116,26 +116,13 @@ fun ModelManagerScreenContent(
     vm: ModelManagerViewModel = viewModel()
 ) {
     val context = LocalContext.current
-    LaunchedEffect(key1 = vm) {
-        vm.load()
-    }
-
-
-    var showAuditionDialog by remember { mutableStateOf<Pair<String, OfflineTtsConfig>?>(null) }
-    if (showAuditionDialog != null) {
-        AuditionDialog(
-            onDismissRequest = { showAuditionDialog = null },
-            offlineTtsConfig = showAuditionDialog!!.second,
-            lang = showAuditionDialog!!.first
-        )
-    }
 
     var showModelEditDialog by remember { mutableStateOf<Model?>(null) }
     if (showModelEditDialog != null) {
         ModelEditDialog(
             onDismissRequest = { showModelEditDialog = null },
             model = showModelEditDialog!!,
-            onSave = { ModelManager.updateModels(it) }
+            onSave = { ConfigModelManager.updateModels(it) }
         )
     }
 
@@ -149,21 +136,22 @@ fun ModelManagerScreenContent(
     }
 
     val view = LocalView.current
-    val reorderState = rememberReorderableLazyListState(onMove = { from, to ->
-        vm.moveModel(from.index, to.index)
-        view.announceForAccessibility(
-            context.getString(
-                R.string.list_moved_desc,
-                from.index.toString(),
-                to.index.toString()
+    val reorderState =
+        rememberReorderableLazyListState(listState = vm.listState, onMove = { from, to ->
+            vm.moveModel(from.index, to.index)
+            view.announceForAccessibility(
+                context.getString(
+                    R.string.list_moved_desc,
+                    from.index.toString(),
+                    to.index.toString()
+                )
             )
-        )
-    })
+        })
 
     LazyColumn(modifier = modifier.reorderable(reorderState), state = reorderState.listState) {
-        items(vm.models, { it.id }) { model ->
+        items(vm.models.value, { it.id }) { model ->
             val lang = remember(model.lang) { model.lang.toLocale().displayName }
-            val enabled = TtsConfig.modelId.value == model.id
+            val enabled = false
             val selected = vm.selectedModels.contains(model)
             ShadowReorderableItem(reorderableState = reorderState, key = model.id) {
                 ModelItem(
@@ -175,20 +163,15 @@ fun ModelManagerScreenContent(
                     lang = lang,
                     enabled = enabled,
                     selected = selected,
-                    onAudition = {
-                        showAuditionDialog = model.lang to model.toOfflineTtsConfig()
-                    },
-                    onEdit = {
-                        showModelEditDialog = model
-                    },
+                    onEdit = { showModelEditDialog = model },
                     onClick = {
                         if (selectMode) {
                             if (selected)
                                 vm.selectedModels.remove(model)
                             else
                                 vm.selectedModels.add(model)
-                        } else
-                            TtsConfig.modelId.value = model.id
+                        }
+//                            TtsConfig.modelId.value = model.id
                     },
                     onLongClick = {
                         if (selectMode) {
@@ -198,6 +181,9 @@ fun ModelManagerScreenContent(
                                 vm.selectedModels.add(model)
                         } else
                             vm.selectedModels.add(model)
+                    },
+                    onCopy = {
+
                     },
                     onDelete = {
                         vm.deleteModel(model)
@@ -215,12 +201,13 @@ private fun ModelItem(
     reorderModifier: Modifier = Modifier,
     name: String,
     lang: String,
+
     enabled: Boolean,
     selected: Boolean,
     onClick: () -> Unit,
     onLongClick: () -> Unit,
-    onAudition: () -> Unit,
     onEdit: () -> Unit,
+    onCopy: () -> Unit,
     onDelete: () -> Unit
 ) {
     val context = LocalContext.current
@@ -293,16 +280,18 @@ private fun ModelItem(
                             fontWeight = if (enabled) FontWeight.Bold else FontWeight.Normal,
                             maxLines = 1,
                         )
-                        Text(
-                            text = lang,
-                            style = MaterialTheme.typography.bodyMedium, color = color
-                        )
+                        Row {
+                            Text(
+                                text = lang,
+                                style = MaterialTheme.typography.bodyMedium, color = color
+                            )
+                        }
                     }
                     Row {
-                        IconButton(onClick = onAudition) {
+                        IconButton(onClick = onEdit) {
                             Icon(
-                                Icons.Default.Headset,
-                                contentDescription = stringResource(id = R.string.audition),
+                                Icons.Default.Edit,
+                                contentDescription = stringResource(id = R.string.edit),
                                 tint = tint
                             )
                         }
@@ -321,14 +310,15 @@ private fun ModelItem(
                             DropdownMenu(
                                 expanded = showOptions,
                                 onDismissRequest = { showOptions = false }) {
+
                                 DropdownMenuItem(
-                                    text = { Text(stringResource(id = R.string.edit)) },
+                                    text = { Text(stringResource(id = android.R.string.copy)) },
                                     leadingIcon = {
-                                        Icon(Icons.Default.Edit, null)
+                                        Icon(Icons.Default.ContentCopy, null)
                                     },
                                     onClick = {
                                         showOptions = false
-                                        onEdit()
+                                        onCopy()
                                     }
                                 )
 
