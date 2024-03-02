@@ -1,5 +1,6 @@
 package com.k2fsa.sherpa.onnx.tts.engine.synthesizer
 
+import android.util.Log
 import com.k2fsa.sherpa.onnx.tts.engine.conf.TtsConfig
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.DelayQueue
@@ -12,11 +13,14 @@ import kotlin.math.min
 
 interface ImplCache {
     fun destroy()
+    fun canDestroy(): Boolean
 }
 
 
 internal class SynthesizerCache {
     companion object {
+        const val TAG = "SynthesizerCache"
+
         private val delayTime: Int
             get() = 1000 * 60 * min(1, TtsConfig.timeoutDestruction.value)
 
@@ -40,8 +44,14 @@ internal class SynthesizerCache {
                         break
                     } else {
                         val task = delayQueue.take()
-                        queueMap.remove(task.id)
-                        task.obj.destroy()
+                        if (task.obj.canDestroy()) {
+                            Log.d(TAG, "ensureTaskRunning: ${task.id} is destroyable.")
+                            task.obj.destroy()
+                            queueMap.remove(task.id)
+                        } else {
+                            Log.d(TAG, "ensureTaskRunning: ${task.id} is running, not destroyable.")
+                            delayQueue.add(task.apply { reset() })
+                        }
                     }
                 }
                 isTaskRunning = false
@@ -54,8 +64,11 @@ internal class SynthesizerCache {
             val oldestEntry =
                 queueMap.entries.minByOrNull { it.value.getDelay(TimeUnit.MILLISECONDS) }
             oldestEntry?.let {
-                queueMap.remove(it.key)
-                delayQueue.remove(it.value)
+                if (it.value.obj.canDestroy()) {
+                    it.value.obj.destroy()
+                    queueMap.remove(it.key)
+                    delayQueue.remove(it.value)
+                }
             }
         }
     }

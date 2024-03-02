@@ -2,6 +2,7 @@ package com.k2fsa.sherpa.onnx.tts.engine.ui.widgets
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.material3.CircularProgressIndicator
@@ -29,7 +30,7 @@ import kotlinx.coroutines.delay
 fun LoadingContent(
     modifier: Modifier = Modifier,
     isLoading: Boolean,
-    content: @Composable () -> Unit
+    content: @Composable BoxScope.() -> Unit
 ) {
     val context = LocalContext.current
     Box(modifier) {

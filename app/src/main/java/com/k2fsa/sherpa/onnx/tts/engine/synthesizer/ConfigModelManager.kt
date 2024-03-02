@@ -13,7 +13,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import java.io.File
 
-object ModelManager {
+object ConfigModelManager {
     const val TAG = "ModelManager"
 
     private val models = mutableListOf<Model>()
@@ -24,6 +24,7 @@ object ModelManager {
     val modelsFlow: StateFlow<List<Model>>
         get() = _modelsFlow.asStateFlow()
 
+
     private fun notifyModelsChange() {
         Log.d(TAG, "notifyModelsChange: ${models.size}")
         _modelsFlow.value = models.toList()
@@ -32,8 +33,7 @@ object ModelManager {
     @Synchronized
     fun load() {
         models.addAll(ConfigManager.config.models)
-        deduplicateModels()
-
+        instinctModels()
         notifyModelsChange()
     }
 
@@ -47,7 +47,7 @@ object ModelManager {
 
     // 去重models
     @Synchronized
-    private fun deduplicateModels() {
+    private fun instinctModels() {
         val list = models.distinctBy { it.id }
         Log.d(TAG, "deduplicateModels: ${list.size}")
         models.clear()
@@ -76,6 +76,7 @@ object ModelManager {
             notifyModelsChange()
         }
     }
+
     @Synchronized
     fun updateModels(model: List<Model>) {
         models.clear()
@@ -104,7 +105,7 @@ object ModelManager {
             ruleFsts = if (dataDir == null) "${dir.name}/rule.fst" else "",
             tokens = "${dir.name}/tokens.txt",
             dataDir = dataDir?.run { "${dir.name}/espeak-ng-data" } ?: "",
-            lang = "en-US"
+            lang = "en-US",
         )
     }
 

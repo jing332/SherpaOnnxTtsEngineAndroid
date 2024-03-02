@@ -1,55 +1,73 @@
 package com.k2fsa.sherpa.onnx.tts.engine.ui.models
 
+import androidx.compose.foundation.lazy.LazyListState
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.k2fsa.sherpa.onnx.tts.engine.synthesizer.ModelManager
+import com.k2fsa.sherpa.onnx.tts.engine.synthesizer.ConfigModelManager
 import com.k2fsa.sherpa.onnx.tts.engine.synthesizer.config.Model
+import com.k2fsa.sherpa.onnx.tts.engine.ui.ImplViewModel
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import java.util.Collections
 
-class ModelManagerViewModel : ViewModel() {
-    internal val models = mutableStateListOf<Model>()
+class ModelManagerViewModel : ImplViewModel() {
+    internal val models = mutableStateOf<List<Model>>(emptyList())
     internal val selectedModels = mutableStateListOf<Model>()
+    internal val listState by lazy { LazyListState() }
+
+    override fun onCleared() {
+        super.onCleared()
+        models.value = emptyList()
+        selectedModels.clear()
+    }
 
     fun load() {
-        viewModelScope.launch {
-            ModelManager.load()
-            ModelManager.modelsFlow.collect {
-                println("collect: ${it.hashCode()}")
-                models.clear()
-                models.addAll(it)
+        viewModelScope.launch(Dispatchers.IO) {
+            runCatching {
+                ConfigModelManager.load()
+            }.onSuccess {
+                ConfigModelManager.modelsFlow.collectLatest {
+                    println("collect: ${it.hashCode()}")
+                    models.value = it
+                }
+            }.onFailure {
+                postError(it)
             }
         }
     }
 
     fun moveModel(from: Int, to: Int) {
-        val list = ModelManager.models().toMutableList()
+        val list = ConfigModelManager.models().toMutableList()
         Collections.swap(list, from, to)
-        ModelManager.updateModels(list)
+        ConfigModelManager.updateModels(list)
     }
 
     fun deleteModel(model: Model) {
-        ModelManager.removeModel(model)
+        ConfigModelManager.removeModel(model)
     }
 
     fun setLanguagesForSelectedModels(lang: String) {
-        val list = ModelManager.models().toMutableList()
+        val list = ConfigModelManager.models().toMutableList()
         list.forEachIndexed { index, model ->
             if (selectedModels.find { it.id == model.id } != null) {
                 list[index] = model.copy(lang = lang)
             }
         }
-        ModelManager.updateModels(list)
+        ConfigModelManager.updateModels(list)
     }
 
     fun selectAll() {
         selectedModels.clear()
-        selectedModels.addAll(models)
+        selectedModels.addAll(models.value)
     }
 
     fun selectInvert() {
-        ModelManager.models().filter { !selectedModels.contains(it) }.let {
+        ConfigModelManager.models().filter { !selectedModels.contains(it) }.let {
             selectedModels.clear()
             selectedModels.addAll(it)
         }

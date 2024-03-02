@@ -141,12 +141,6 @@ private fun MainToolBar(
         modifier = modifier,
         title = { Text(stringResource(id = R.string.app_name)) },
         actions = {
-            IconButton(onClick = {
-                context.startActivity(SampleTextManagerActivity::class.java)
-            }) {
-                Icon(Icons.Default.TextFields, stringResource(R.string.sample_text))
-            }
-
             var showOptions by remember { mutableStateOf(false) }
             IconButton(onClick = { showOptions = true }) {
                 Icon(Icons.Default.MoreVert, stringResource(id = R.string.more_options))

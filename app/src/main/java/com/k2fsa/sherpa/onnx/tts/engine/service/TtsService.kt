@@ -9,8 +9,9 @@ import android.speech.tts.Voice
 import android.util.Log
 import com.k2fsa.sherpa.onnx.tts.engine.R
 import com.k2fsa.sherpa.onnx.tts.engine.conf.TtsConfig
-import com.k2fsa.sherpa.onnx.tts.engine.synthesizer.ModelManager
-import com.k2fsa.sherpa.onnx.tts.engine.synthesizer.ModelManager.toOfflineTtsConfig
+import com.k2fsa.sherpa.onnx.tts.engine.synthesizer.ConfigModelManager
+import com.k2fsa.sherpa.onnx.tts.engine.synthesizer.ConfigModelManager.toOfflineTtsConfig
+import com.k2fsa.sherpa.onnx.tts.engine.synthesizer.ConfigVoiceManager
 import com.k2fsa.sherpa.onnx.tts.engine.synthesizer.SynthesizerManager
 import com.k2fsa.sherpa.onnx.tts.engine.synthesizer.config.Model
 import com.k2fsa.sherpa.onnx.tts.engine.ui.TAG
@@ -75,8 +76,8 @@ class TtsService : TextToSpeechService() {
     override fun onCreate() {
         Log.i(TAG, "onCreate tts service")
 
-        ModelManager.load()
-        languages = ModelManager.languages().map { newLocaleFromCode(it) }
+        ConfigModelManager.load()
+        languages = ConfigModelManager.languages().map { newLocaleFromCode(it) }
 
         super.onCreate()
     }
@@ -138,11 +139,12 @@ class TtsService : TextToSpeechService() {
                 /* features = */ setOf()
             )
         )
-        ModelManager.models().forEach {
+        ConfigVoiceManager.speakers().forEach {
+            val model = ConfigModelManager.models().find { m -> m.id == it.model } ?: return@forEach
             list.add(
                 Voice(
-                    /* name = */ it.id,
-                    /* locale = */ newLocaleFromCode(it.lang),
+                    /* name = */ model.id + "_" + it.id,
+                    /* locale = */ newLocaleFromCode(model.lang),
                     /* quality = */ Voice.QUALITY_NORMAL,
                     /* latency = */ Voice.LATENCY_NORMAL,
                     /* requiresNetworkConnection = */ false,
@@ -157,8 +159,14 @@ class TtsService : TextToSpeechService() {
 
     override fun onIsValidVoiceName(voiceName: String?): Int {
         Log.i(TAG, "onIsValidVoiceName: $voiceName")
+        if (voiceName.isNullOrBlank())
+            return TextToSpeech.ERROR
+
         return if (voiceName == NOT_SET_VOICE_NAME ||
-            ModelManager.models().find { it.id == voiceName } != null
+            com.k2fsa.sherpa.onnx.tts.engine.synthesizer.config.Voice.from(voiceName).run {
+                ConfigVoiceManager.speakers().any { it.id == id } && ConfigModelManager.models()
+                    .any { it.id == model }
+            }
         ) {
             TextToSpeech.SUCCESS
         } else {
@@ -177,13 +185,13 @@ class TtsService : TextToSpeechService() {
 
     override fun onStop() {}
 
-    private fun getTtsConfig(voiceName: String?): Model? {
-        Log.d(TAG, "getTtsConfig: $voiceName")
-        return ModelManager.models()
+    private fun getTtsModel(voiceName: String?): Model? {
+        Log.d(TAG, "getTtsModel: $voiceName")
+        return ConfigModelManager.models()
             .run { if (voiceName == null || voiceName == NOT_SET_VOICE_NAME) null else this }
             ?.find { it.id == voiceName }
-            ?: ModelManager.models().find { it.id == TtsConfig.modelId.value }
-            ?: ModelManager.models().getOrNull(0)
+            ?: ConfigModelManager.models().find { it.id == TtsConfig.voice.value.model }
+            ?: ConfigModelManager.models().getOrNull(0)
     }
 
     override fun onSynthesizeText(request: SynthesisRequest?, callback: SynthesisCallback?) {
@@ -203,16 +211,20 @@ class TtsService : TextToSpeechService() {
         }
         Log.i(TAG, "text: $text")
 
-        val ttsCfg = getTtsConfig(voiceName)
-        Log.i(TAG, "ttsConfig: $ttsCfg")
-        if (ttsCfg == null) {
+        val voice =
+            if (voiceName.isNullOrBlank() || voiceName == NOT_SET_VOICE_NAME) TtsConfig.voice.value else
+                com.k2fsa.sherpa.onnx.tts.engine.synthesizer.config.Voice.from(voiceName)
+        val ttsModel = ConfigModelManager.models().find { it.id == voice.model }
+        Log.i(TAG, "ttsConfig: $ttsModel")
+        if (ttsModel == null) {
             Log.e(TAG, "tts not found")
             longToast(R.string.tts_config_not_set)
             callback.error()
             return
         }
 
-        val tts = SynthesizerManager.getTTS(ttsCfg.toOfflineTtsConfig())
+        val tts =
+            SynthesizerManager.getTTS(ttsModel.toOfflineTtsConfig().copy(maxNumSentences = 10))
 
         // Note that AudioFormat.ENCODING_PCM_FLOAT requires API level >= 24
         // callback.start(tts.sampleRate(), AudioFormat.ENCODING_PCM_FLOAT, 1)
@@ -237,10 +249,15 @@ class TtsService : TextToSpeechService() {
 
         }
 
-        Log.i(TAG, "text: $text")
+        val speed = request.speechRate / 100f
+        Log.i(
+            TAG,
+            "voice: ${voice}, text: $text, speechRate: ${request.speechRate} (speed: ${speed})"
+        )
         tts.generateWithCallback(
             text = text,
-            speed = request.speechRate / 6f,
+            sid = voice.id,
+            speed = speed,
             callback = ttsCallback,
         )
 

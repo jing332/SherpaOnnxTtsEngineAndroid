@@ -1,6 +1,6 @@
 package com.k2fsa.sherpa.onnx.tts.engine.ui.widgets
 
-import androidx.compose.foundation.layout.Arrangement
+ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
@@ -76,7 +76,11 @@ fun AppDialog(
     buttons: @Composable BoxScope.() -> Unit = {
         TextButton(onClick = onDismissRequest) { Text(stringResource(id = android.R.string.cancel)) }
     },
-) = BasicAlertDialog(modifier = modifier, onDismissRequest = onDismissRequest, properties = properties) {
+) = BasicAlertDialog(
+    modifier = modifier,
+    onDismissRequest = onDismissRequest,
+    properties = properties
+) {
     Surface(
         tonalElevation = 8.dp, shadowElevation = 8.dp, shape = MaterialTheme.shapes.extraLarge
     ) {
@@ -97,6 +101,7 @@ fun AppDialog(
                 Modifier
                     .weight(weight = 1f, fill = false)
                     .align(Alignment.Start)
+                    .padding(vertical = 8.dp)
             ) {
                 CompositionLocalProvider(LocalTextStyle provides MaterialTheme.typography.titleMedium) {
                     content()
@@ -113,6 +118,20 @@ fun AppDialog(
                 }
             }
         }
+    }
+}
+
+@Composable
+fun CancelButton(modifier: Modifier = Modifier, onClick: () -> Unit) {
+    TextButton(modifier = modifier, onClick = onClick) {
+        Text(stringResource(id = android.R.string.cancel))
+    }
+}
+
+@Composable
+fun OkButton(modifier: Modifier = Modifier, enabled: Boolean = true, onClick: () -> Unit) {
+    TextButton(enabled = enabled, modifier = modifier, onClick = onClick) {
+        Text(stringResource(id = android.R.string.ok))
     }
 }
 

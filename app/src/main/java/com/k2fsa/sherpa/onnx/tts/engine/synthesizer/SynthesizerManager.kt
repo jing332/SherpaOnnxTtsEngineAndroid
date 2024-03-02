@@ -34,8 +34,9 @@ object SynthesizerManager {
 
     private class Synthesizer(val tts: OfflineTts) : ImplCache {
         override fun destroy() {
-            Log.d(TAG, "destroy: ${tts.config}")
             tts.free()
         }
+
+        override fun canDestroy(): Boolean = !tts.isRunning
     }
 }

@@ -28,6 +28,11 @@ fun TextFieldDialog(
                 value = textValue, onValueChange = { textValue = it },
             )
         },
+        dismissButton = {
+            TextButton(onClick = onDismissRequest) {
+                Text(stringResource(id = android.R.string.cancel))
+            }
+        },
         confirmButton = {
             TextButton(onClick = {
                 onConfirm(textValue)

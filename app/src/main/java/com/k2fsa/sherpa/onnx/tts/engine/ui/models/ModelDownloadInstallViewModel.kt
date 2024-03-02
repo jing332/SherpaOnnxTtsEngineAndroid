@@ -9,7 +9,7 @@ import androidx.lifecycle.viewModelScope
 import com.drake.net.Get
 import com.k2fsa.sherpa.onnx.tts.engine.AppConst
 import com.k2fsa.sherpa.onnx.tts.engine.GithubRelease
-import com.k2fsa.sherpa.onnx.tts.engine.synthesizer.ModelManager
+import com.k2fsa.sherpa.onnx.tts.engine.synthesizer.ConfigModelManager
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
@@ -26,7 +26,7 @@ class ModelDownloadInstallViewModel : ViewModel() {
                 val str =
                     Get<String>("https://api.github.com/repos/k2-fsa/sherpa-onnx/releases/tags/tts-models").await()
                 val release: GithubRelease = AppConst.jsonBuilder.decodeFromString(str)
-                val addedModels = ModelManager.models()
+                val addedModels = ConfigModelManager.models()
                 modelList.addAll(release.assets.filter { asset ->
                     // contains only tar.bz2 and not added
                     val ext = ".tar.bz2"

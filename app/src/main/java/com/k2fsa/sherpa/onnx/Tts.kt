@@ -44,6 +44,7 @@ class OfflineTts(
     assetManager: AssetManager? = null,
     var config: OfflineTtsConfig,
 ) {
+    var isRunning = false
     private var ptr: Long
 
     init {
@@ -58,25 +59,36 @@ class OfflineTts(
 
     fun numSpeakers() = getNumSpeakers(ptr)
 
+    @Synchronized
     fun generate(
         text: String,
         sid: Int = 0,
         speed: Float = 1.0f
     ): GeneratedAudio {
+        isRunning = true
         var objArray = generateImpl(ptr, text = text, sid = sid, speed = speed)
+        isRunning = false
         return GeneratedAudio(
             samples = objArray[0] as FloatArray,
             sampleRate = objArray[1] as Int
         )
     }
-
+    @Synchronized
     fun generateWithCallback(
         text: String,
         sid: Int = 0,
         speed: Float = 1.0f,
         callback: (samples: FloatArray) -> Unit
     ): GeneratedAudio {
-        var objArray = generateWithCallbackImpl(ptr, text = text, sid = sid, speed = speed, callback=callback)
+        isRunning = true
+        var objArray = generateWithCallbackImpl(
+            ptr,
+            text = text,
+            sid = sid,
+            speed = speed,
+            callback = callback
+        )
+        isRunning = false
         return GeneratedAudio(
             samples = objArray[0] as FloatArray,
             sampleRate = objArray[1] as Int

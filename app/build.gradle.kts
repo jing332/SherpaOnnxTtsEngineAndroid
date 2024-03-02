@@ -95,6 +95,8 @@ android {
 dependencies {
     coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.0.4")
 
+    implementation("androidx.localbroadcastmanager:localbroadcastmanager:1.1.0")
+
     implementation("com.squareup.okio:okio:3.3.0")
     implementation("com.squareup.okhttp3:okhttp:4.11.0")
     implementation("com.github.liangjingkanji:Net:3.6.4")
@@ -108,14 +110,14 @@ dependencies {
     implementation("com.geyifeng.immersionbar:immersionbar-ktx:3.2.2")
 
     implementation("com.charleskorn.kaml:kaml:0.57.0")
-    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.0")
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.2")
 
     implementation("com.github.FunnySaltyFish.ComposeDataSaver:data-saver:v1.1.5")
     implementation("org.burnoutcrew.composereorderable:reorderable:0.9.6")
 
-    val accompanistVersion = "0.33.0-alpha"
+    val accompanistVersion = "0.34.0"
     implementation("com.google.accompanist:accompanist-systemuicontroller:${accompanistVersion}")
-    implementation("com.google.accompanist:accompanist-navigation-animation:${accompanistVersion}")
+//    implementation("com.google.accompanist:accompanist-navigation-animation:${accompanistVersion}")
     implementation("com.google.accompanist:accompanist-permissions:${accompanistVersion}")
 
 

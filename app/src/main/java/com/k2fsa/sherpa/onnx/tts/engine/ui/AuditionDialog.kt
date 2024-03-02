@@ -7,7 +7,6 @@ import android.media.AudioTrack
 import android.util.Log
 import androidx.compose.foundation.layout.Column
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -18,10 +17,13 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
-import com.k2fsa.sherpa.onnx.OfflineTtsConfig
 import com.k2fsa.sherpa.onnx.tts.engine.R
+import com.k2fsa.sherpa.onnx.tts.engine.synthesizer.ConfigModelManager
+import com.k2fsa.sherpa.onnx.tts.engine.synthesizer.ConfigModelManager.toOfflineTtsConfig
 import com.k2fsa.sherpa.onnx.tts.engine.synthesizer.SampleTextManager
 import com.k2fsa.sherpa.onnx.tts.engine.synthesizer.SynthesizerManager
+import com.k2fsa.sherpa.onnx.tts.engine.synthesizer.config.Model
+import com.k2fsa.sherpa.onnx.tts.engine.synthesizer.config.Voice
 import com.k2fsa.sherpa.onnx.tts.engine.utils.PcmAudioPlayer
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -54,10 +56,15 @@ private fun getAudioTrack(sampleRate: Int): AudioTrack {
 @Composable
 fun AuditionDialog(
     onDismissRequest: () -> Unit,
-    offlineTtsConfig: OfflineTtsConfig,
-    lang: String = "",
-    text: String = SampleTextManager.getSampleText(lang),
+    voice: Voice,
 ) {
+    val model = remember { ConfigModelManager.models().find { it.id == voice.model } } ?: run {
+        onDismissRequest()
+        return
+    }
+
+    val text  = SampleTextManager.getSampleText(model.lang)
+    val config = remember { model.toOfflineTtsConfig() }
     val scope = rememberCoroutineScope()
     val context = LocalContext.current
     val audioPlayer = remember {
@@ -65,11 +72,13 @@ fun AuditionDialog(
     }
 
     LaunchedEffect(key1 = Unit) {
-        val tts = SynthesizerManager.getTTS(offlineTtsConfig)
+        val tts = SynthesizerManager.getTTS(config)
+        println("numSpeakers: " + tts.numSpeakers())
+
         val track = getAudioTrack(tts.sampleRate())
         track.play()
         scope.launch(Dispatchers.IO) {
-            tts.generateWithCallback(text = text) {
+            tts.generateWithCallback(text = text, sid = voice.id) {
                 println("write to track: ${it.size}")
                 track.write(it, 0, it.size, AudioTrack.WRITE_BLOCKING)
             }
@@ -100,7 +109,7 @@ fun AuditionDialog(
                 )
 
                 Text(
-                    text = offlineTtsConfig.model.vits.model.split("/").last(),
+                    text = config.model.vits.model.split("/").last(),
                     style = MaterialTheme.typography.bodyMedium
                 )
             }

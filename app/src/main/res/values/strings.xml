@@ -54,7 +54,23 @@
     <string name="model_installed">Model installed</string>
     <string name="timed_out">Timed out</string>
     <string name="cache_size">Cache size</string>
-    <string name="cache_size_summary">Maximum number of engine caches</string>
+    <string name="cache_size_summary">Maximum number of model caches</string>
     <string name="thread_num">Number of threads</string>
-    <string name="thread_num_summary">Maximum number of threads per engine</string>
+    <string name="thread_num_summary">Maximum number of threads per model</string>
+    <string name="copy_voice">Copy voice</string>
+    <string name="default_speaker">Default speaker</string>
+    <string name="speaker_id_desc">Speaker %1$s</string>
+    <string name="voice_manager">Voice manager</string>
+    <string name="add_voice">Add voice</string>
+    <string name="model">Model</string>
+    <string name="error">Error</string>
+    <string name="duplicate_voices">Duplicate voices</string>
+    <string name="not_support_more_speaker">This model does not support more speakers</string>
+    <string name="no_models_waiting_to_added">There are no models waiting to be added in the directory</string>
+    <string name="sort">Sort</string>
+    <string name="sort_by_name">By Name</string>
+    <string name="sort_by_model">By Model</string>
+    <string name="please_select">Please select</string>
+    <string name="sample_text_summary">"Configure sample text for each language "</string>
+    <string name="edit_name">Edit name</string>
 </resources>
