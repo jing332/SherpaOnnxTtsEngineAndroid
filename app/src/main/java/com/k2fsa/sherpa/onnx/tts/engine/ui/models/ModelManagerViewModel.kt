@@ -5,7 +5,7 @@ import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.viewModelScope
 import com.k2fsa.sherpa.onnx.tts.engine.synthesizer.ConfigModelManager
-import com.k2fsa.sherpa.onnx.tts.engine.synthesizer.ModelPackageInstaller
+import com.k2fsa.sherpa.onnx.tts.engine.synthesizer.ModelPackageManager
 import com.k2fsa.sherpa.onnx.tts.engine.synthesizer.config.Model
 import com.k2fsa.sherpa.onnx.tts.engine.ui.ImplViewModel
 import kotlinx.coroutines.Dispatchers
@@ -78,7 +78,7 @@ class ModelManagerViewModel : ImplViewModel() {
     fun deleteModels(models: List<Model>, deleteFile: Boolean) {
         if (deleteFile)
             models.forEach {
-                ModelPackageInstaller.deleteModel(it.id)
+                ModelPackageManager.deleteModel(it.id)
             }
         ConfigModelManager.removeModel(*models.toTypedArray())
     }

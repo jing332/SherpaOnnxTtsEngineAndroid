@@ -105,6 +105,8 @@ dependencies {
     implementation("androidx.documentfile:documentfile:1.0.1")
 
     implementation("org.apache.commons:commons-compress:1.26.0")
+    implementation("commons-codec:commons-codec:1.16.1")
+
     implementation("org.tukaani:xz:1.9")
 
 

@@ -7,6 +7,7 @@ import com.drake.net.interfaces.ProgressListener
 import com.k2fsa.sherpa.onnx.tts.engine.AppConst
 import com.k2fsa.sherpa.onnx.tts.engine.FileConst
 import com.k2fsa.sherpa.onnx.tts.engine.GithubRelease
+import com.k2fsa.sherpa.onnx.tts.engine.synthesizer.config.Model
 import com.k2fsa.sherpa.onnx.tts.engine.utils.CompressUtils
 import com.k2fsa.sherpa.onnx.tts.engine.utils.CompressorFactory
 import kotlinx.coroutines.coroutineScope
@@ -16,9 +17,10 @@ import okhttp3.Response
 import org.apache.commons.io.FileUtils
 import java.io.File
 import java.io.InputStream
+import java.io.OutputStream
 import java.util.UUID
 
-object ModelPackageInstaller {
+object ModelPackageManager {
     val supportedTypes = listOf(
         "tar.bz2",
         "tgz",
@@ -92,15 +94,21 @@ object ModelPackageInstaller {
      * [source] example: [FileConst.cacheModelDir]/$uuid`
      */
     fun installModelPackageFromDir(source: File): Boolean {
-        val dir = source.listFiles { file, _ ->
+        val dirs = source.listFiles { file, _ ->
             file.isDirectory
-        }?.getOrNull(0) ?: return false
-        val model = ConfigModelManager.analyzeToModel(dir) ?: return false
+        } ?: return false
 
-        FileUtils.copyDirectory(source, File(FileConst.modelDir))
-        ConfigModelManager.addModel(model)
+        val models = dirs.mapNotNull {
+            ConfigModelManager.analyzeToModel(it)
+        }
 
-        return true
+        val ok = models.isNotEmpty()
+        if (ok) {
+            FileUtils.copyDirectory(source, File(FileConst.modelDir))
+            ConfigModelManager.addModel(*models.toTypedArray())
+        }
+
+        return ok
     }
 
     /**
@@ -162,5 +170,30 @@ object ModelPackageInstaller {
         }.await()
 
         return@coroutineScope file
+    }
+
+
+    suspend fun exportModelsToZip(
+        models: List<String>,
+        type: String,
+        ous: OutputStream,
+        onZipProgress: CompressUtils.ProgressListener
+    ): File {
+        val cacheDir = File(FileConst.cacheModelDir + File.separator + UUID.randomUUID().toString())
+        cacheDir.mkdirs()
+
+        models.forEach {
+            val modelDir = File(FileConst.modelDir + File.separator + it)
+            val target = File(cacheDir, it)
+            FileUtils.copyDirectory(modelDir, target)
+        }
+
+        val compressor = CompressorFactory.createCompressor(type) ?: throw IllegalArgumentException(
+            "Unsupported type: $type"
+        )
+
+        compressor.compress(cacheDir.absolutePath, ous, onZipProgress)
+
+        return File("")
     }
 }

@@ -39,13 +39,20 @@ object SampleTextManager {
             "km-KH" to "ប្រើប្រាស់ម៉ូតូសមុខរបស់កាតីក្នុងការបង្កើតសមុខរបស់ខ្លួន",
             "lo-LA" to "ໃຊ້ເຄື່ອງດຽວຂອງກາດອີໂອເຊຍໃໝ່",
         )
+
     }
+    val defaultText: String
+        get() = defaultTextMap["en-US"] ?: ""
 
 
+    @Suppress("IfThenToElvis")
     fun getSampleText(code: String): String {
-        val list = SampleTextConfig[code]
+        val lang = code.lowercase()
+        val texts = SampleTextConfig.config.toList()
+        val list = texts.find { it.first.lowercase() == lang }?.second
+            ?: texts.find { it.first.lowercase() == lang.substringBefore("-") }?.second
         return if (list == null) {
-            defaultTextMap[code] ?: ""
+            defaultTextMap.toList().find { it.first.lowercase() == lang }?.second ?: defaultText
         } else {
             list.random(Random(System.currentTimeMillis()))
         }

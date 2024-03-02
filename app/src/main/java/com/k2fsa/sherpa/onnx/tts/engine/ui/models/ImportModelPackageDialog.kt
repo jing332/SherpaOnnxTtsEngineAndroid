@@ -16,8 +16,8 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.documentfile.provider.DocumentFile
 import com.k2fsa.sherpa.onnx.tts.engine.R
-import com.k2fsa.sherpa.onnx.tts.engine.service.ModelPackageInstallService
-import com.k2fsa.sherpa.onnx.tts.engine.synthesizer.ModelPackageInstaller
+import com.k2fsa.sherpa.onnx.tts.engine.service.ModelManagerService
+import com.k2fsa.sherpa.onnx.tts.engine.synthesizer.ModelPackageManager
 import com.k2fsa.sherpa.onnx.tts.engine.utils.grantReadPermission
 import com.k2fsa.sherpa.onnx.tts.engine.utils.longToast
 
@@ -59,10 +59,10 @@ fun ImportModelPackageDialog(onDismissRequest: () -> Unit) {
                 return@rememberLauncherForActivityResult
             }
 
-            if (ModelPackageInstaller.supportedTypes.none { file.endsWith(it) }) {
+            if (ModelPackageManager.supportedTypes.none { file.endsWith(it) }) {
                 context.longToast(
                     R.string.only_ext_files_are_supported,
-                    ModelPackageInstaller.supportedTypes.joinToString(" ")
+                    ModelPackageManager.supportedTypes.joinToString(" ")
                 )
 
                 onDismissRequest()
@@ -71,7 +71,7 @@ fun ImportModelPackageDialog(onDismissRequest: () -> Unit) {
 
             showTipsDialog = true
 
-            context.startService(Intent(context, ModelPackageInstallService::class.java).apply {
+            context.startService(Intent(context, ModelManagerService::class.java).apply {
                 data = uri
             })
         }

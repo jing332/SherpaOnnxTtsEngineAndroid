@@ -1,16 +1,14 @@
 package com.k2fsa.sherpa.onnx.tts.engine.utils
 
+import android.util.Log
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.withContext
 import org.apache.commons.compress.archivers.ArchiveEntry
 import org.apache.commons.compress.archivers.ArchiveInputStream
-import org.apache.commons.compress.archivers.tar.TarArchiveInputStream
-import org.apache.commons.compress.archivers.zip.ZipArchiveInputStream
-import org.apache.commons.compress.compressors.bzip2.BZip2CompressorInputStream
+import org.apache.commons.io.FileUtils
 import java.io.File
-import java.io.InputStream
 import kotlin.coroutines.coroutineContext
 
 
@@ -33,13 +31,17 @@ object CompressUtils {
             while (nextEntry.also { entry = it } != null) {
                 totalBytes += entry.size
                 val file = createFile(outputDir, entry.name)
+
                 if (entry.isDirectory) {
                     file.mkdirs()
                 } else {
-                    if (file.exists()) {
-                        file.delete()
-                    } else {
-                        withContext(Dispatchers.IO) { file.createNewFile() }
+                    withContext(Dispatchers.IO) {
+                        if (file.exists()) {
+                            file.delete()
+                        } else {
+                            FileUtils.createParentDirectories(file)
+                            file.createNewFile()
+                        }
                     }
 
                     file.outputStream().use { out ->
@@ -63,8 +65,17 @@ object CompressUtils {
     }
 
 
-
     private fun createFile(outputDir: String, name: String): File {
         return File(outputDir + File.separator + name)
+    }
+
+    suspend fun deepGetFiles(file: File, onFile: suspend (File) -> Unit) {
+        if (file.isDirectory) {
+            file.listFiles()?.forEach {
+                deepGetFiles(it, onFile)
+            }
+        } else {
+            onFile(file)
+        }
     }
 }

@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Next-gen Kaldi: TTS</string>
+    <string name="app_name" translatable="false">Next-gen Kaldi: TTS</string>
     <string name="audition">Audition</string>
     <string name="sample_text">Sample text</string>
     <string name="import_model_package">Import model package</string>
@@ -80,4 +80,8 @@
     <string name="delete_model">Delete model</string>
     <string name="delete_model_file">Delete model file</string>
     <string name="model_not_found">❌ Model not found: %1$s</string>
+    <string name="export">Export</string>
+    <string name="export_failed">Export failed ❌</string>
+    <string name="zipping">Compressing</string>
+    <string name="export_finished">Export finished</string>
 </resources>

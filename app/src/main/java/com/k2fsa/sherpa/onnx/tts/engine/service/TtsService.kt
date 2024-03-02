@@ -223,8 +223,7 @@ class TtsService : TextToSpeechService() {
             return
         }
 
-        val tts =
-            SynthesizerManager.getTTS(ttsModel.toOfflineTtsConfig().copy(maxNumSentences = 10))
+        val tts = SynthesizerManager.getTTS(ttsModel.toOfflineTtsConfig())
 
         // Note that AudioFormat.ENCODING_PCM_FLOAT requires API level >= 24
         // callback.start(tts.sampleRate(), AudioFormat.ENCODING_PCM_FLOAT, 1)

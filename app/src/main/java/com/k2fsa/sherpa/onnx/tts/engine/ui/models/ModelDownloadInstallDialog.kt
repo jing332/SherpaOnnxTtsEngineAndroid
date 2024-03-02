@@ -1,7 +1,6 @@
 package com.k2fsa.sherpa.onnx.tts.engine.ui.models
 
 import android.content.Intent
-import android.graphics.Paint.Align
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -31,8 +30,8 @@ import androidx.compose.ui.unit.dp
 import androidx.core.net.toUri
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.k2fsa.sherpa.onnx.tts.engine.R
-import com.k2fsa.sherpa.onnx.tts.engine.service.ModelPackageInstallService
-import com.k2fsa.sherpa.onnx.tts.engine.service.ModelPackageInstallService.Companion.EXTRA_FILE_NAME
+import com.k2fsa.sherpa.onnx.tts.engine.service.ModelManagerService
+import com.k2fsa.sherpa.onnx.tts.engine.service.ModelManagerService.Companion.EXTRA_FILE_NAME
 import com.k2fsa.sherpa.onnx.tts.engine.ui.widgets.AppDialog
 import com.k2fsa.sherpa.onnx.tts.engine.ui.widgets.LoadingContent
 import com.k2fsa.sherpa.onnx.tts.engine.ui.widgets.SearchTextFieldInList
@@ -68,7 +67,6 @@ fun ModelDownloadInstallDialog(
             title = stringResource(id = R.string.download_model)
         )
 
-
     AppDialog(onDismissRequest = onDismissRequest,
         title = { Text(stringResource(id = R.string.download_model)) }, content = {
             if (vm.error.isNotEmpty())
@@ -88,7 +86,7 @@ fun ModelDownloadInstallDialog(
                 Column(Modifier.fillMaxWidth()) {
                     val state = rememberLazyListState()
                     var search by rememberSaveable { mutableStateOf("") }
-                    if (!isLoading && vm.error.isNotBlank())
+                    if (!isLoading && vm.error.isEmpty())
                         SearchTextFieldInList(
                             Modifier.align(Alignment.CenterHorizontally),
                             onSearch = { search = it }
@@ -106,7 +104,7 @@ fun ModelDownloadInstallDialog(
                                         context.startService(
                                             Intent(
                                                 context,
-                                                ModelPackageInstallService::class.java
+                                                ModelManagerService::class.java
                                             ).apply {
                                                 data = asset.browserDownloadUrl.toUri()
                                                 putExtra(EXTRA_FILE_NAME, asset.name)
