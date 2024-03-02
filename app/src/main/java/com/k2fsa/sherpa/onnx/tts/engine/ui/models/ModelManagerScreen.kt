@@ -148,6 +148,15 @@ fun ModelManagerScreenContent(
             )
         })
 
+    if (vm.models.value.isEmpty()) {
+        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+            Text(
+                text = stringResource(id = R.string.no_models_tips),
+                style = MaterialTheme.typography.titleMedium
+            )
+        }
+    }
+
     LazyColumn(modifier = modifier.reorderable(reorderState), state = reorderState.listState) {
         items(vm.models.value, { it.id }) { model ->
             val lang = remember(model.lang) { model.lang.toLocale().displayName }

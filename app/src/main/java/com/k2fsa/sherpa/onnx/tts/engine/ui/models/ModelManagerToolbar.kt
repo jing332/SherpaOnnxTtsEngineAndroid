@@ -5,6 +5,7 @@ import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.AddToPhotos
 import androidx.compose.material.icons.filled.Archive
 import androidx.compose.material.icons.filled.Close
@@ -12,7 +13,6 @@ import androidx.compose.material.icons.filled.Deselect
 import androidx.compose.material.icons.filled.Download
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.SelectAll
-import androidx.compose.material.icons.filled.TextFields
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -32,10 +32,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import com.k2fsa.sherpa.onnx.tts.engine.R
-import com.k2fsa.sherpa.onnx.tts.engine.ui.sampletext.SampleTextManagerActivity
 import com.k2fsa.sherpa.onnx.tts.engine.ui.widgets.AppDialog
 import com.k2fsa.sherpa.onnx.tts.engine.ui.widgets.AppTooltip
-import com.k2fsa.sherpa.onnx.tts.engine.utils.startActivity
 
 
 class ToolBarState() {
@@ -143,7 +141,7 @@ private fun MainToolBar(
         actions = {
             var showOptions by remember { mutableStateOf(false) }
             IconButton(onClick = { showOptions = true }) {
-                Icon(Icons.Default.MoreVert, stringResource(id = R.string.more_options))
+                Icon(Icons.Default.Add, stringResource(id = R.string.add))
                 DropdownMenu(expanded = showOptions, onDismissRequest = { showOptions = false }) {
                     DropdownMenuItem(
                         text = { Text(stringResource(R.string.add_models)) },
