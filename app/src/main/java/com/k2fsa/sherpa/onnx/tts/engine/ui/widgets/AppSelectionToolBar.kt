@@ -1,5 +1,6 @@
 package com.k2fsa.sherpa.onnx.tts.engine.ui.widgets
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.material.icons.Icons
@@ -30,6 +31,10 @@ private fun InternalSelectionBar(
     state: SelectionToolBarState,
     actions: @Composable RowScope.() -> Unit,
 ) {
+    BackHandler {
+        state.onSelectClear()
+    }
+
     TopAppBar(
         navigationIcon = {
             IconButton(onClick = state.onSelectClear) {

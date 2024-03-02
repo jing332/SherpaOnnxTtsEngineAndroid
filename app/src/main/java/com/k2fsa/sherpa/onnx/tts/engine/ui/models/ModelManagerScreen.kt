@@ -1,34 +1,29 @@
 package com.k2fsa.sherpa.onnx.tts.engine.ui.models
 
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.background
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material.icons.filled.DeleteForever
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.Language
 import androidx.compose.material.icons.filled.MoreVert
-import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -38,23 +33,22 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.onLongClick
-import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.semantics.stateDescription
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.k2fsa.sherpa.onnx.tts.engine.R
 import com.k2fsa.sherpa.onnx.tts.engine.synthesizer.ConfigModelManager
 import com.k2fsa.sherpa.onnx.tts.engine.synthesizer.config.Model
-import com.k2fsa.sherpa.onnx.tts.engine.ui.ConfirmDeleteDialog
 import com.k2fsa.sherpa.onnx.tts.engine.ui.ErrorHandler
 import com.k2fsa.sherpa.onnx.tts.engine.ui.ShadowReorderableItem
+import com.k2fsa.sherpa.onnx.tts.engine.ui.widgets.AppDialog
+import com.k2fsa.sherpa.onnx.tts.engine.ui.widgets.AppSelectionToolBar
+import com.k2fsa.sherpa.onnx.tts.engine.ui.widgets.SelectableCard
+import com.k2fsa.sherpa.onnx.tts.engine.ui.widgets.SelectionToolBarState
 import com.k2fsa.sherpa.onnx.tts.engine.utils.performLongPress
 import com.k2fsa.sherpa.onnx.tts.engine.utils.toLocale
 import org.burnoutcrew.reorderable.detectReorder
@@ -62,13 +56,13 @@ import org.burnoutcrew.reorderable.rememberReorderableLazyListState
 import org.burnoutcrew.reorderable.reorderable
 
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ModelManagerScreen() {
+    val vm: ModelManagerViewModel = viewModel()
+    val context = LocalContext.current
     var showImportDialog by remember { mutableStateOf(false) }
     if (showImportDialog)
         AddModelsDialog { showImportDialog = false }
-    val context = LocalContext.current
 
     var showImportPackageDialog by remember { mutableStateOf(false) }
     if (showImportPackageDialog)
@@ -78,32 +72,108 @@ fun ModelManagerScreen() {
     if (showDlModelDialog)
         ModelDownloadInstallDialog { showDlModelDialog = false }
 
-    val vm: ModelManagerViewModel = viewModel()
+    var showLanguageDialog by remember { mutableStateOf(false) }
+    if (showLanguageDialog) {
+        var text by remember { mutableStateOf("") }
+        AppDialog(
+            onDismissRequest = { showLanguageDialog = false },
+            title = { Text(stringResource(id = R.string.language)) },
+            content = {
+                LanguageTextField(modifier = Modifier.fillMaxWidth(), language = text) {
+                    text = it
+                }
+            },
+            buttons = {
+                Row {
+                    TextButton(onClick = { showLanguageDialog = false }) {
+                        Text(stringResource(id = android.R.string.cancel))
+                    }
+                    TextButton(
+                        enabled = text.isNotBlank(),
+                        onClick = {
+                            showLanguageDialog = false
+                            vm.setLanguagesForSelectedModels(text)
+                        }) {
+                        Text(stringResource(id = android.R.string.ok))
+                    }
+
+                }
+            }
+        )
+    }
+
+    var showDeleteDialog by remember { mutableStateOf<List<Model>?>(null) }
+    if (showDeleteDialog != null) {
+        val models = showDeleteDialog!!
+        ModelDeleteDialog(
+            onDismissRequest = { showDeleteDialog = null },
+            message = remember(models) { models.joinToString { it.name } },
+            onConfirm = { deleteFile ->
+                vm.deleteModels(models, deleteFile)
+                showDeleteDialog = null
+            }
+        )
+    }
+
     LaunchedEffect(key1 = vm) {
         vm.load()
     }
     ErrorHandler(vm = vm)
 
-    val toolBarState = remember { ToolBarState() }
-    Scaffold(topBar = {
-        ModelManagerToolbar(
-            state = toolBarState,
-            onAddModels = { showImportDialog = true },
-            onImportModels = { showImportPackageDialog = true },
-            onDownloadModels = { showDlModelDialog = true },
-
-            onSetLanguages = { vm.setLanguagesForSelectedModels(it) },
-            onSelectAll = { vm.selectAll() },
-            onSelectInvert = { vm.selectInvert() },
-            onCancelSelect = { vm.selectedModels.clear() },
+    val toolBarState = remember {
+        SelectionToolBarState(
+            onSelectAll = vm::selectAll,
+            onSelectInvert = vm::selectInvert,
+            onSelectClear = vm::clearSelect
         )
+    }
+    Scaffold(topBar = {
+        AppSelectionToolBar(state = toolBarState, mainBar = {
+            ModelManagerMainToolBar(
+                modifier = Modifier,
+                onAddModels = { showImportDialog = true },
+                onImportModels = { showImportDialog = true },
+                onDownloadModels = { showDlModelDialog = true }
+            )
+        }) {
+            var showOptions by remember { mutableStateOf(false) }
+            IconButton(onClick = { showOptions = true }) {
+                Icon(Icons.Default.MoreVert, stringResource(id = R.string.more_options))
+                DropdownMenu(expanded = showOptions, onDismissRequest = { showOptions = false }) {
+                    DropdownMenuItem(
+                        leadingIcon = { Icon(Icons.Default.Language, null) },
+                        text = { Text(stringResource(id = R.string.change_language)) },
+                        onClick = {
+                            showLanguageDialog = true
+                            showOptions = false
+                        }
+                    )
+
+                    DropdownMenuItem(
+                        leadingIcon = {
+                            Icon(
+                                Icons.Default.DeleteForever,
+                                null,
+                                tint = MaterialTheme.colorScheme.error
+                            )
+                        },
+                        text = { Text(stringResource(id = R.string.delete)) },
+                        onClick = {
+                            showOptions = false
+                            showDeleteDialog = vm.selectedModels.toList()
+                        }
+                    )
+                }
+            }
+        }
     }) {
         ModelManagerScreenContent(
             Modifier
                 .padding(it)
                 .fillMaxSize(),
             vm = vm,
-            toolBarState = toolBarState
+            toolBarState = toolBarState,
+            onDeleteModel = { showDeleteDialog = listOf(it) }
         )
     }
 }
@@ -112,7 +182,9 @@ fun ModelManagerScreen() {
 @Composable
 fun ModelManagerScreenContent(
     modifier: Modifier = Modifier,
-    toolBarState: ToolBarState,
+    toolBarState: SelectionToolBarState,
+    onDeleteModel: (Model) -> Unit,
+
     vm: ModelManagerViewModel = viewModel()
 ) {
     val context = LocalContext.current
@@ -160,7 +232,6 @@ fun ModelManagerScreenContent(
     LazyColumn(modifier = modifier.reorderable(reorderState), state = reorderState.listState) {
         items(vm.models.value, { it.id }) { model ->
             val lang = remember(model.lang) { model.lang.toLocale().displayName }
-            val enabled = false
             val selected = vm.selectedModels.contains(model)
             ShadowReorderableItem(reorderableState = reorderState, key = model.id) {
                 ModelItem(
@@ -170,7 +241,6 @@ fun ModelManagerScreenContent(
                     reorderModifier = Modifier.detectReorder(reorderState),
                     name = model.name,
                     lang = lang,
-                    enabled = enabled,
                     selected = selected,
                     onEdit = { showModelEditDialog = model },
                     onClick = {
@@ -191,12 +261,7 @@ fun ModelManagerScreenContent(
                         } else
                             vm.selectedModels.add(model)
                     },
-                    onCopy = {
-
-                    },
-                    onDelete = {
-                        vm.deleteModel(model)
-                    }
+                    onDelete = { onDeleteModel(model) }
                 )
             }
         }
@@ -211,68 +276,26 @@ private fun ModelItem(
     name: String,
     lang: String,
 
-    enabled: Boolean,
     selected: Boolean,
     onClick: () -> Unit,
     onLongClick: () -> Unit,
     onEdit: () -> Unit,
-    onCopy: () -> Unit,
     onDelete: () -> Unit
 ) {
     val context = LocalContext.current
     val view = LocalView.current
 
-    var showDeleteConfirmDialog by remember { mutableStateOf(false) }
-    if (showDeleteConfirmDialog)
-        ConfirmDeleteDialog(
-            onDismissRequest = { showDeleteConfirmDialog = false }, name = name,
-            desc = stringResource(R.string.delete_model_from_config_desc)
-        ) {
-            onDelete()
-        }
-
-    val color =
-        if (enabled) MaterialTheme.colorScheme.primary else Color.Unspecified
-    val tint =
-        if (enabled) MaterialTheme.colorScheme.primary else LocalContentColor.current
-
-    Card(
-        modifier = modifier
+    SelectableCard(
+        modifier
             .clip(CardDefaults.shape)
-            .combinedClickable(
-                onClick = onClick,
-                onLongClick = {
-                    view.performLongPress()
-                    onLongClick()
-                },
-            )
-            .semantics {
-                this.selected = selected
-            },
-        colors = if (selected) CardDefaults.elevatedCardColors(
-            containerColor = MaterialTheme.colorScheme.primaryContainer.copy(
-                alpha = 0.5f
-            )
-        )
-        else CardDefaults.elevatedCardColors(),
-        border = if (selected) BorderStroke(1.dp, MaterialTheme.colorScheme.primary) else null,
+            .combinedClickable(onClick = onClick, onLongClick = {
+                view.performLongPress()
+                onLongClick()
+            }),
+        selected = selected
     ) {
         Box(modifier = Modifier.padding(4.dp)) {
             Row {
-                Box(
-                    modifier = Modifier
-                        .align(Alignment.CenterVertically)
-                        .background(
-                            color = color,
-                            shape = MaterialTheme.shapes.small
-                        )
-                        .width(4.dp)
-                        .height(32.dp)
-                        .semantics {
-                            this.stateDescription = if (enabled) context.getString(R.string.enabled)
-                            else ""
-                        }
-                )
                 Row(
                     modifier = Modifier.weight(1f),
                     verticalAlignment = Alignment.CenterVertically
@@ -285,14 +308,12 @@ private fun ModelItem(
                         Text(
                             text = name,
                             style = MaterialTheme.typography.titleMedium,
-                            color = color,
-                            fontWeight = if (enabled) FontWeight.Bold else FontWeight.Normal,
                             maxLines = 1,
                         )
                         Row {
                             Text(
                                 text = lang,
-                                style = MaterialTheme.typography.bodyMedium, color = color
+                                style = MaterialTheme.typography.bodyMedium
                             )
                         }
                     }
@@ -301,7 +322,6 @@ private fun ModelItem(
                             Icon(
                                 Icons.Default.Edit,
                                 contentDescription = stringResource(id = R.string.edit),
-                                tint = tint
                             )
                         }
 
@@ -313,23 +333,22 @@ private fun ModelItem(
                             Icon(
                                 Icons.Default.MoreVert,
                                 contentDescription = stringResource(id = R.string.more_options),
-                                tint = tint
                             )
 
                             DropdownMenu(
                                 expanded = showOptions,
                                 onDismissRequest = { showOptions = false }) {
 
-                                DropdownMenuItem(
-                                    text = { Text(stringResource(id = android.R.string.copy)) },
-                                    leadingIcon = {
-                                        Icon(Icons.Default.ContentCopy, null)
-                                    },
-                                    onClick = {
-                                        showOptions = false
-                                        onCopy()
-                                    }
-                                )
+//                                DropdownMenuItem(
+//                                    text = { Text(stringResource(id = android.R.string.copy)) },
+//                                    leadingIcon = {
+//                                        Icon(Icons.Default.ContentCopy, null)
+//                                    },
+//                                    onClick = {
+//                                        showOptions = false
+//                                        onCopy()
+//                                    }
+//                                )
 
                                 DropdownMenuItem(
                                     text = { Text(stringResource(id = R.string.delete)) },
@@ -338,7 +357,7 @@ private fun ModelItem(
                                     },
                                     onClick = {
                                         showOptions = false
-                                        showDeleteConfirmDialog = true
+                                        onDelete()
                                     }
                                 )
 
