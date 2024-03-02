@@ -47,6 +47,8 @@ import com.k2fsa.sherpa.onnx.tts.engine.ui.ErrorHandler
 import com.k2fsa.sherpa.onnx.tts.engine.ui.ShadowReorderableItem
 import com.k2fsa.sherpa.onnx.tts.engine.ui.widgets.AppDialog
 import com.k2fsa.sherpa.onnx.tts.engine.ui.widgets.AppSelectionToolBar
+import com.k2fsa.sherpa.onnx.tts.engine.ui.widgets.DeleteForeverIcon
+import com.k2fsa.sherpa.onnx.tts.engine.ui.widgets.DeleteMenuItem
 import com.k2fsa.sherpa.onnx.tts.engine.ui.widgets.SelectableCard
 import com.k2fsa.sherpa.onnx.tts.engine.ui.widgets.SelectionToolBarState
 import com.k2fsa.sherpa.onnx.tts.engine.utils.performLongPress
@@ -149,20 +151,10 @@ fun ModelManagerScreen() {
                         }
                     )
 
-                    DropdownMenuItem(
-                        leadingIcon = {
-                            Icon(
-                                Icons.Default.DeleteForever,
-                                null,
-                                tint = MaterialTheme.colorScheme.error
-                            )
-                        },
-                        text = { Text(stringResource(id = R.string.delete)) },
-                        onClick = {
-                            showOptions = false
-                            showDeleteDialog = vm.selectedModels.toList()
-                        }
-                    )
+                    DeleteMenuItem {
+                        showOptions = false
+                        showDeleteDialog = vm.selectedModels.toList()
+                    }
                 }
             }
         }
@@ -201,10 +193,6 @@ fun ModelManagerScreenContent(
     val selectMode = vm.selectedModels.isNotEmpty()
     LaunchedEffect(key1 = vm.selectedModels.size) {
         toolBarState.selectedCount.value = vm.selectedModels.size
-    }
-
-    LaunchedEffect(key1 = toolBarState.selectedCount.value) {
-        if (toolBarState.selectedCount.value == 0) vm.selectedModels.clear()
     }
 
     val view = LocalView.current
@@ -350,17 +338,10 @@ private fun ModelItem(
 //                                    }
 //                                )
 
-                                DropdownMenuItem(
-                                    text = { Text(stringResource(id = R.string.delete)) },
-                                    leadingIcon = {
-                                        Icon(Icons.Default.DeleteForever, null)
-                                    },
-                                    onClick = {
-                                        showOptions = false
-                                        onDelete()
-                                    }
-                                )
-
+                                DeleteMenuItem {
+                                    showOptions = false
+                                    onDelete()
+                                }
 
                             }
                         }

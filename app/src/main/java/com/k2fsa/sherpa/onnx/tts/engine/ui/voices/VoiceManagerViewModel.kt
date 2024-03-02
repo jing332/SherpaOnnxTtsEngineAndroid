@@ -52,6 +52,7 @@ class VoiceManagerViewModel : ImplViewModel() {
                     ConfigModelManager.load()
             }.onSuccess {
                 ConfigVoiceManager.flow.collectLatest {
+                    selects.clear()
                     voices = it
                 }
             }.onFailure {
@@ -64,8 +65,8 @@ class VoiceManagerViewModel : ImplViewModel() {
         ConfigVoiceManager.move(from, to)
     }
 
-    fun delete(voice: Voice) {
-        ConfigVoiceManager.remove(voice)
+    fun delete(voice: List<Voice>) {
+        ConfigVoiceManager.removeAll(voice)
     }
 
     fun addVoice(voice: Voice) {
@@ -87,5 +88,9 @@ class VoiceManagerViewModel : ImplViewModel() {
 
     fun isModelAvailable(voice: Voice): Boolean {
         return ConfigModelManager.models().any { it.id == voice.model }
+    }
+
+    fun unselect(voice: Voice) {
+        selects.remove(voice)
     }
 }
