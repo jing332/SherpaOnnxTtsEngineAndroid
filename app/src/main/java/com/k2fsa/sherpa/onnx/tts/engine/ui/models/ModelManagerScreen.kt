@@ -11,10 +11,10 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.DeleteForever
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Language
 import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material.icons.filled.Output
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
@@ -47,7 +47,6 @@ import com.k2fsa.sherpa.onnx.tts.engine.ui.ErrorHandler
 import com.k2fsa.sherpa.onnx.tts.engine.ui.ShadowReorderableItem
 import com.k2fsa.sherpa.onnx.tts.engine.ui.widgets.AppDialog
 import com.k2fsa.sherpa.onnx.tts.engine.ui.widgets.AppSelectionToolBar
-import com.k2fsa.sherpa.onnx.tts.engine.ui.widgets.DeleteForeverIcon
 import com.k2fsa.sherpa.onnx.tts.engine.ui.widgets.DeleteMenuItem
 import com.k2fsa.sherpa.onnx.tts.engine.ui.widgets.SelectableCard
 import com.k2fsa.sherpa.onnx.tts.engine.ui.widgets.SelectionToolBarState
@@ -117,6 +116,13 @@ fun ModelManagerScreen() {
         )
     }
 
+    var showExportDialog by remember { mutableStateOf<List<Model>?>(null) }
+    ModelExportDialog(
+        show = showExportDialog != null,
+        onDismissRequest = { showExportDialog = null },
+        models = showExportDialog ?: emptyList(),
+    )
+
     LaunchedEffect(key1 = vm) {
         vm.load()
     }
@@ -143,6 +149,15 @@ fun ModelManagerScreen() {
                 Icon(Icons.Default.MoreVert, stringResource(id = R.string.more_options))
                 DropdownMenu(expanded = showOptions, onDismissRequest = { showOptions = false }) {
                     DropdownMenuItem(
+                        leadingIcon = { Icon(Icons.Default.Output, null) },
+                        text = { Text(stringResource(id = R.string.export)) },
+                        onClick = {
+                            showExportDialog = vm.selectedModels
+                            showOptions = false
+                        }
+                    )
+
+                    DropdownMenuItem(
                         leadingIcon = { Icon(Icons.Default.Language, null) },
                         text = { Text(stringResource(id = R.string.change_language)) },
                         onClick = {
@@ -165,7 +180,8 @@ fun ModelManagerScreen() {
                 .fillMaxSize(),
             vm = vm,
             toolBarState = toolBarState,
-            onDeleteModel = { showDeleteDialog = listOf(it) }
+            onDeleteModel = { showDeleteDialog = listOf(it) },
+            onExportModel = { showExportDialog = listOf(it) }
         )
     }
 }
@@ -176,6 +192,7 @@ fun ModelManagerScreenContent(
     modifier: Modifier = Modifier,
     toolBarState: SelectionToolBarState,
     onDeleteModel: (Model) -> Unit,
+    onExportModel: (Model) -> Unit,
 
     vm: ModelManagerViewModel = viewModel()
 ) {
@@ -249,7 +266,8 @@ fun ModelManagerScreenContent(
                         } else
                             vm.selectedModels.add(model)
                     },
-                    onDelete = { onDeleteModel(model) }
+                    onDelete = { onDeleteModel(model) },
+                    onExport = { onExportModel(model) }
                 )
             }
         }
@@ -265,6 +283,7 @@ private fun ModelItem(
     lang: String,
 
     selected: Boolean,
+    onExport: () -> Unit,
     onClick: () -> Unit,
     onLongClick: () -> Unit,
     onEdit: () -> Unit,
@@ -327,16 +346,16 @@ private fun ModelItem(
                                 expanded = showOptions,
                                 onDismissRequest = { showOptions = false }) {
 
-//                                DropdownMenuItem(
-//                                    text = { Text(stringResource(id = android.R.string.copy)) },
-//                                    leadingIcon = {
-//                                        Icon(Icons.Default.ContentCopy, null)
-//                                    },
-//                                    onClick = {
-//                                        showOptions = false
-//                                        onCopy()
-//                                    }
-//                                )
+                                DropdownMenuItem(
+                                    text = { Text(stringResource(id = R.string.export)) },
+                                    leadingIcon = {
+                                        Icon(Icons.Default.Output, null)
+                                    },
+                                    onClick = {
+                                        showOptions = false
+                                        onExport()
+                                    }
+                                )
 
                                 DeleteMenuItem {
                                     showOptions = false
