@@ -5,5 +5,5 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class Config(
     val models: List<Model> = emptyList(),
-    val speakers: List<Voice> = emptyList()
+    val voices: List<Voice> = emptyList()
 )

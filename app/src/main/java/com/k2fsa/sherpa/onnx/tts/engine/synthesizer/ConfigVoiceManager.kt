@@ -18,13 +18,13 @@ object ConfigVoiceManager : MutableCollection<Voice> {
 
     private fun notifySpeakersChange() {
         Log.d(ConfigModelManager.TAG, "notifySpeakersChange: ${speakers.size}")
-        ConfigManager.updateConfig(config = ConfigManager.config.copy(speakers = speakers))
+        ConfigManager.updateConfig(config = ConfigManager.config.copy(voices = speakers))
         _flow.value = speakers.toList()
     }
 
     @Synchronized
     fun load() {
-        speakers = ConfigManager.config.speakers.toMutableList()
+        speakers = ConfigManager.config.voices.toMutableList()
         distinct()
         notifySpeakersChange()
     }
