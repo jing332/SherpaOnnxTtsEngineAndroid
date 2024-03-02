@@ -1,5 +1,5 @@
-- automatic download and installation model
-- batch change language
-- model list reorder
-- engine cache size
-- number of threads per engine 
+- Batch delete model
+- Export model to zip
+- Github proxy url
+- Add tips
+- refactor model and voice, and support speaker id.
