@@ -22,6 +22,7 @@ import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -40,6 +41,8 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.k2fsa.sherpa.onnx.tts.engine.R
@@ -55,6 +58,7 @@ import com.k2fsa.sherpa.onnx.tts.engine.ui.widgets.SelectionToolBarState
 import com.k2fsa.sherpa.onnx.tts.engine.ui.widgets.TextFieldDialog
 import com.k2fsa.sherpa.onnx.tts.engine.ui.widgets.VerticalBar
 import com.k2fsa.sherpa.onnx.tts.engine.utils.clickableRipple
+import com.k2fsa.sherpa.onnx.tts.engine.utils.toast
 import org.burnoutcrew.reorderable.detectReorder
 import org.burnoutcrew.reorderable.rememberReorderableLazyListState
 import org.burnoutcrew.reorderable.reorderable
@@ -168,11 +172,19 @@ fun VoiceManagerScreen() {
             items(vm.voices, key = { it.toString() }) { voice ->
                 ShadowReorderableItem(reorderableState = reorderState, key = voice.toString()) {
                     val enabled = voice.contains(TtsConfig.voice.value)
+
+                    val available = remember(voice) { vm.isModelAvailable(voice) }
+                    LaunchedEffect(key1 = available) {
+                        if (!available && voice.contains(TtsConfig.voice.value))
+                            TtsConfig.voice.value = Voice.EMPTY
+                    }
+
                     Item(
                         modifier = Modifier
                             .animateItemPlacement()
                             .padding(4.dp),
                         reorderModifier = Modifier.detectReorder(reorderState),
+                        available = available,
                         enabled = enabled,
                         selected = vm.isSelected(voice),
                         name = voice.name,
@@ -200,6 +212,8 @@ fun VoiceManagerScreen() {
 private fun Item(
     modifier: Modifier,
     reorderModifier: Modifier,
+
+    available: Boolean,
     enabled: Boolean,
     selected: Boolean,
 
@@ -220,17 +234,24 @@ private fun Item(
         }
     }
 
-
     val context = LocalContext.current
     val color =
-        if (enabled) MaterialTheme.colorScheme.primary else Color.Unspecified
-    val tint =
-        if (enabled) MaterialTheme.colorScheme.primary else LocalContentColor.current
+        if (available)
+            if (enabled) MaterialTheme.colorScheme.primary else Color.Unspecified
+        else MaterialTheme.colorScheme.error
+
+    val tint = if (enabled) MaterialTheme.colorScheme.primary else LocalContentColor.current
+    val iconButtonColors = IconButtonDefaults.iconButtonColors(contentColor = tint)
 
     SelectableCard(
         modifier
             .clip(CardDefaults.shape)
-            .clickableRipple { onClick() },
+            .clickableRipple {
+                if (available)
+                    onClick()
+                else
+                    context.toast(R.string.model_not_found, model)
+            },
         selected = selected
     ) {
         Row(Modifier.padding(4.dp), verticalAlignment = Alignment.CenterVertically) {
@@ -251,21 +272,28 @@ private fun Item(
                             color = color
                         )
 
-                    Text(text = model, style = MaterialTheme.typography.bodyMedium, color = color)
+                    Text(
+                        modifier = Modifier.semantics {
+                            contentDescription = if (available) model
+                            else context.getString(R.string.model_not_found, model)
+                        },
+                        text = model,
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = color
+                    )
                 }
             }
 
             Row {
-                IconButton(onClick = onAudition) {
-                    Icon(Icons.Default.Headset, stringResource(id = R.string.audition), tint = tint)
+                IconButton(enabled = available, onClick = onAudition, colors = iconButtonColors) {
+                    Icon(Icons.Default.Headset, stringResource(id = R.string.audition))
                 }
 
                 var showOptions by rememberSaveable { mutableStateOf(false) }
-                IconButton(modifier = reorderModifier, onClick = { showOptions = true }) {
+                IconButton(modifier = reorderModifier,colors = iconButtonColors, onClick = { showOptions = true }) {
                     Icon(
                         Icons.Default.MoreVert,
                         stringResource(id = R.string.more_options),
-                        tint = tint
                     )
 
                     DropdownMenu(

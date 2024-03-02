@@ -84,4 +84,8 @@ class VoiceManagerViewModel : ImplViewModel() {
     fun updateVoice(voice: Voice) {
         ConfigVoiceManager.update(voice)
     }
+
+    fun isModelAvailable(voice: Voice): Boolean {
+        return ConfigModelManager.models().any { it.id == voice.model }
+    }
 }
