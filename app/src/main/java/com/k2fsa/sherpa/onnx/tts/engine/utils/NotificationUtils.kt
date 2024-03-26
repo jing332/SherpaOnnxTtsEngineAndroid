@@ -15,9 +15,10 @@ import java.util.concurrent.atomic.AtomicLong
 
 
 val pendingIntentFlags =
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
-        PendingIntent.FLAG_IMMUTABLE else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S)
-            PendingIntent.FLAG_MUTABLE or PendingIntent.FLAG_UPDATE_CURRENT else 0
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S)
+            PendingIntent.FLAG_IMMUTABLE or
+            PendingIntent.FLAG_UPDATE_CURRENT
+    else 0
 
 val notificationManager
     get() = app.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
