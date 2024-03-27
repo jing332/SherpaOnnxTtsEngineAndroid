@@ -88,7 +88,7 @@ class MainActivity : ComponentActivity() {
                         @Composable
                         fun Item(strId: Int, id: String, icon: ImageVector) {
                             NavigationBarItem(
-                                alwaysShowLabel = false,
+                                alwaysShowLabel = true,
                                 selected = containsRoute(id),
                                 onClick = {
                                     /*navController.navigate(id) {
@@ -130,7 +130,7 @@ class MainActivity : ComponentActivity() {
                         NavHost(
                             modifier = Modifier.padding(bottom = it.calculateBottomPadding()),
                             navController = navController,
-                            startDestination = NavRoutes.SpeakerManager.id
+                            startDestination = NavRoutes.ModelManager.id
                         ) {
 
                             composable(NavRoutes.ModelManager.id) {

@@ -2,32 +2,7 @@
 <project version="4">
   <component name="deploymentTargetDropDown">
     <value>
-      <entry key="PreviewModelDownloadDialog">
-        <State />
-      </entry>
-      <entry key="PreviewSampleTextEdit">
-        <State />
-      </entry>
-      <entry key="SampleTextManagerActivity">
-        <State />
-      </entry>
       <entry key="app">
-        <State>
-          <runningDeviceTargetSelectedWithDropDown>
-            <Target>
-              <type value="RUNNING_DEVICE_TARGET" />
-              <deviceKey>
-                <Key>
-                  <type value="SERIAL_NUMBER" />
-                  <value value="192.168.0.104:38983" />
-                </Key>
-              </deviceKey>
-            </Target>
-          </runningDeviceTargetSelectedWithDropDown>
-          <timeTargetWasSelectedWithDropDown value="2024-03-02T13:36:55.676445500Z" />
-        </State>
-      </entry>
-      <entry key="app (Nothing)">
         <State />
       </entry>
     </value>
