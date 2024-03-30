@@ -1,7 +1,11 @@
 package com.k2fsa.sherpa.onnx.tts.engine.ui.models
 
+import android.view.MotionEvent
+import android.widget.Toast
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.hoverable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -15,6 +19,7 @@ import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Language
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Output
+import androidx.compose.material3.Button
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
@@ -33,9 +38,12 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.ui.focus.onFocusEvent
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.semantics.onLongClick
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
@@ -255,15 +263,11 @@ fun ModelManagerScreenContent(
                             else
                                 vm.selectedModels.add(model)
                         }
-//                            TtsConfig.modelId.value = model.id
+                        //TtsConfig.modelId.value = model.id
                     },
+
                     onLongClick = {
-                        if (selectMode) {
-                            if (selected)
-                                vm.selectedModels.remove(model)
-                            else
-                                vm.selectedModels.add(model)
-                        } else
+                        if (!selectMode)
                             vm.selectedModels.add(model)
                     },
                     onDelete = { onDeleteModel(model) },
@@ -281,7 +285,6 @@ private fun ModelItem(
     reorderModifier: Modifier = Modifier,
     name: String,
     lang: String,
-
     selected: Boolean,
     onExport: () -> Unit,
     onClick: () -> Unit,
@@ -293,13 +296,17 @@ private fun ModelItem(
     val view = LocalView.current
 
     SelectableCard(
+        name = name,
+        selected = selected,
         modifier
             .clip(CardDefaults.shape)
-            .combinedClickable(onClick = onClick, onLongClick = {
-                view.performLongPress()
-                onLongClick()
-            }),
-        selected = selected
+            .combinedClickable(
+                onClick = onClick,
+                onLongClick = {
+                    view.performLongPress()
+                    onLongClick()
+                },
+            ),
     ) {
         Box(modifier = Modifier.padding(4.dp)) {
             Row {
@@ -316,7 +323,8 @@ private fun ModelItem(
                             text = name,
                             style = MaterialTheme.typography.titleMedium,
                             maxLines = 1,
-                        )
+
+                            )
                         Row {
                             Text(
                                 text = lang,

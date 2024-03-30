@@ -284,6 +284,8 @@ private fun Item(
     val iconButtonColors = IconButtonDefaults.iconButtonColors(contentColor = tint)
 
     SelectableCard(
+        name = name,
+        selected = selected,
         modifier
             .clip(CardDefaults.shape)
             .combinedClickable(
@@ -295,7 +297,6 @@ private fun Item(
                     onLongClick()
                 }
             ),
-        selected = selected
     ) {
         Row(Modifier.padding(4.dp), verticalAlignment = Alignment.CenterVertically) {
             VerticalBar(enabled = enabled)
