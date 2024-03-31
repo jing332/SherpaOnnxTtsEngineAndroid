@@ -257,13 +257,9 @@ fun ModelManagerScreenContent(
                         }
 //                            TtsConfig.modelId.value = model.id
                     },
+
                     onLongClick = {
-                        if (selectMode) {
-                            if (selected)
-                                vm.selectedModels.remove(model)
-                            else
-                                vm.selectedModels.add(model)
-                        } else
+                        if (!selectMode)
                             vm.selectedModels.add(model)
                     },
                     onDelete = { onDeleteModel(model) },
@@ -281,7 +277,6 @@ private fun ModelItem(
     reorderModifier: Modifier = Modifier,
     name: String,
     lang: String,
-
     selected: Boolean,
     onExport: () -> Unit,
     onClick: () -> Unit,
@@ -293,13 +288,17 @@ private fun ModelItem(
     val view = LocalView.current
 
     SelectableCard(
+        name = name,
+        selected = selected,
         modifier
             .clip(CardDefaults.shape)
-            .combinedClickable(onClick = onClick, onLongClick = {
-                view.performLongPress()
-                onLongClick()
-            }),
-        selected = selected
+            .combinedClickable(
+                onClick = onClick,
+                onLongClick = {
+                    view.performLongPress()
+                    onLongClick()
+                },
+            ),
     ) {
         Box(modifier = Modifier.padding(4.dp)) {
             Row {
@@ -316,7 +315,8 @@ private fun ModelItem(
                             text = name,
                             style = MaterialTheme.typography.titleMedium,
                             maxLines = 1,
-                        )
+
+                            )
                         Row {
                             Text(
                                 text = lang,

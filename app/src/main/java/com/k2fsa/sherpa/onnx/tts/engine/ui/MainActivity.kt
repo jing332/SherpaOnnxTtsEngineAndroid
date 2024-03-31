@@ -88,7 +88,7 @@ class MainActivity : ComponentActivity() {
                         @Composable
                         fun Item(strId: Int, id: String, icon: ImageVector) {
                             NavigationBarItem(
-                                alwaysShowLabel = false,
+                                alwaysShowLabel = true,
                                 selected = containsRoute(id),
                                 onClick = {
                                     /*navController.navigate(id) {
