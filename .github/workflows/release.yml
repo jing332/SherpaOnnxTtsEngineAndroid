@@ -16,17 +16,17 @@ jobs:
       ver_name: ""
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - uses: actions/setup-java@v3
+      - uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: 17
 
       - name: Setup Gradle
-        uses: gradle/gradle-build-action@v2
+        uses: gradle/gradle-build-action@v3
 
       - name: Build
         run: |
@@ -41,7 +41,7 @@ jobs:
           echo "ver_name=$(grep -m 1 'versionName' ${{ env.outputs_dir }}/apk/release/output-metadata.json | cut -d\" -f4)" >> $GITHUB_ENV
 
       - name: Upload Mappings to Artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4.3.0
         with:
           name: mappings_${{ env.ver_name }}
           path: ${{ env.outputs_dir }}/mapping/*/*.txt
