@@ -41,12 +41,12 @@ jobs:
           echo "ver_name=$(grep -m 1 'versionName' ${{ env.outputs_dir }}/apk/release/output-metadata.json | cut -d\" -f4)" >> $GITHUB_ENV
 
       - name: Upload Mappings to Artifact
-        uses: actions/upload-artifact@v4.3.0
+        uses: actions/upload-artifact@v4
         with:
           name: mappings_${{ env.ver_name }}
           path: ${{ env.outputs_dir }}/mapping/*/*.txt
 
-      - uses: softprops/action-gh-release@v0.1.15
+      - uses: softprops/action-gh-release@v2
         with:
           name: ${{ env.ver_name }}
           tag_name: ${{ env.ver_name }}
