@@ -4,6 +4,12 @@
 ![GitHub release](https://img.shields.io/github/downloads/jing332/SherpaOnnxTtsEngineAndroid/total)
 ![GitHub release (latest by date)](https://img.shields.io/github/downloads/jing332/SherpaOnnxTtsEngineAndroid/latest/total)
 
+
+# Recommend 💖
+MultiTTS APP: https://t.me/MultiTTS_channel
+
+Sharepa resource pack: https://t.me/MultiTTS_resource/67
+
 # SherpaOnnxTtsEngineAndroid
 
 > [!NOTE]
