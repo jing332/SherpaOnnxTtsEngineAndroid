@@ -13,6 +13,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.stateDescription
@@ -43,8 +44,9 @@ fun VerticalBar(
 
 @Composable
 fun SelectableCard(
-    modifier: Modifier,
+    name: String,
     selected: Boolean,
+    modifier: Modifier,
     content: @Composable() (ColumnScope.() -> Unit)
 ) {
     val context = LocalContext.current
@@ -53,6 +55,7 @@ fun SelectableCard(
     Card(
         modifier = modifier
             .semantics {
+                this.stateDescription = "$name ${if (!selected) "not" else ""} selected"
                 this.selected = selected
             },
         colors = if (selected) CardDefaults.elevatedCardColors(
