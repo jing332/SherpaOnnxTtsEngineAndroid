@@ -90,7 +90,7 @@ abstract class IProgressTaskService(
         title: String,
         content: String
     ): Notification {
-        Log.d(TAG, "createNotification: $progress, $title, $content")
+        //Log.d(TAG, "createNotification: $progress, $title, $content")
         return notificationBuilder(chanId).apply {
             setContentTitle(title)
             setContentText(content)
@@ -154,7 +154,7 @@ abstract class IProgressTaskService(
         if (mNotificationId != NotificationUtils.UNSPECIFIED_ID) {
             if (SystemClock.elapsedRealtime() - mLastUpdateNotification < 500) return
 
-            Log.d(TAG, "startForegroundCompat: $progress, $title, $content")
+            //Log.d(TAG, "startForegroundCompat: $progress, $title, $content")
             startForegroundCompat(
                 mNotificationId,
                 createNotification(summary, progress, title, content)

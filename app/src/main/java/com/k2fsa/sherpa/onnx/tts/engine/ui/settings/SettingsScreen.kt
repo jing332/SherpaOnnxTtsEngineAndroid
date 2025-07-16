@@ -27,6 +27,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
+import com.k2fsa.sherpa.onnx.tts.engine.BuildConfig
 import com.k2fsa.sherpa.onnx.tts.engine.R
 import com.k2fsa.sherpa.onnx.tts.engine.conf.AppConfig
 import com.k2fsa.sherpa.onnx.tts.engine.conf.TtsConfig
@@ -96,7 +97,7 @@ fun SettingsScreen() {
     val context = LocalContext.current
     Scaffold { paddingValues ->
         Column(Modifier.padding(paddingValues)) {
-            DividerPreference { Text(stringResource(id = R.string.app_name)) }
+            DividerPreference { Text(stringResource(id = R.string.app_name) + ", ver. " + BuildConfig.VERSION_NAME) }
             GhProxyPreference()
 
             DividerPreference { Text("TTS") }

@@ -20,7 +20,56 @@
 # hide the original source file name.
 #-renamesourcefileattribute SourceFile
 
--keep class com.k2fsa.sherpa.onnx.* { *; }
+# Keep all sherpa-onnx classes and their methods
+-keep class com.k2fsa.sherpa.onnx.** { *; }
+
+# Keep native methods
+-keepclasseswithmembernames class * {
+    native <methods>;
+}
+
+# Keep classes that are accessed from JNI
+-keep class com.k2fsa.sherpa.onnx.OfflineTts {
+    *;
+}
+
+# Keep callback-related methods
+-keep class * {
+    *** generateWithCallbackImpl(...);
+}
+
+# Keep Kotlin function types used in JNI
+-keep class kotlin.jvm.functions.Function1 { *; }
+
+# Ignore missing optional dependencies for Net library (com.github.liangjingkanji:Net)
+-dontwarn com.drake.brv.PageRefreshLayout
+-dontwarn com.drake.statelayout.StateLayout
+
+# Ignore missing optional dependencies for Apache Commons Compress
+-dontwarn com.github.luben.zstd.ZstdInputStream
+-dontwarn com.github.luben.zstd.ZstdOutputStream
+-dontwarn org.brotli.dec.BrotliInputStream
+-dontwarn org.objectweb.asm.AnnotationVisitor
+-dontwarn org.objectweb.asm.Attribute
+-dontwarn org.objectweb.asm.ClassReader
+-dontwarn org.objectweb.asm.ClassVisitor
+-dontwarn org.objectweb.asm.FieldVisitor
+-dontwarn org.objectweb.asm.MethodVisitor
+
+# Keep classes that might be accessed reflectively
+-keepclassmembers class * {
+    @androidx.annotation.Keep *;
+}
+
+# Keep serialization classes
+-keepclassmembers class * implements java.io.Serializable {
+    static final long serialVersionUID;
+    private static final java.io.ObjectStreamField[] serialPersistentFields;
+    private void writeObject(java.io.ObjectOutputStream);
+    private void readObject(java.io.ObjectInputStream);
+    java.lang.Object writeReplace();
+    java.lang.Object readResolve();
+}
 
 
 #-------------- 去掉所有打印 -------------

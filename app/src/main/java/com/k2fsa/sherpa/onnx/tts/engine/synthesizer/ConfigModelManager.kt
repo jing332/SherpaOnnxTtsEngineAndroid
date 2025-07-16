@@ -12,6 +12,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import java.io.File
+import java.util.Locale
 
 object ConfigModelManager {
     const val TAG = "ModelManager"
@@ -100,6 +101,22 @@ object ConfigModelManager {
             ?.run { if (isNotEmpty()) first() else null }
             ?: return null
 
+        // From onyx.name, get substring before the first dash
+        var lang = onnx.name.substringBefore('-')
+        // change _ to -
+        lang = lang.replace('_', '-')
+        // Test if it is a valid language code
+        if (!lang.matches(Regex("^[a-z]{2,3}(-[A-Z]{2})?$"))) {
+            // Log.w(TAG, "Invalid language code: $lang, using default 'en'")
+            lang = "en-US"
+        }
+        Locale(lang).let {
+            if (it.language.isBlank()) {
+                //Log.w(TAG, "Invalid language code: $lang, using default 'en-US'")
+                lang = "en-US"
+            }
+        }
+
         val dataDir = dir.resolve("espeak-ng-data").takeIf { it.exists() }
 
         return Model(
@@ -109,7 +126,7 @@ object ConfigModelManager {
             ruleFsts = if (dataDir == null) "${dir.name}/rule.fst" else "",
             tokens = "${dir.name}/tokens.txt",
             dataDir = dataDir?.run { "${dir.name}/espeak-ng-data" } ?: "",
-            lang = "en-US",
+            lang = lang,
         )
     }
 
